@@ -2,6 +2,7 @@ import { Component, BaseComponent, Components } from "@flamework/components";
 import { ServerStorage } from "@rbxts/services";
 import { Dependency, Flamework, OnStart } from "@flamework/core";
 import { Door } from "./Doors";
+import { Logger } from "@rbxts/log/out/Logger";
 
 interface IRoomComponent extends Instance {
     Build: Model;
@@ -24,12 +25,16 @@ interface IRoomAttributes {
 export class Room extends BaseComponent <IRoomAttributes, IRoomComponent> implements OnStart {
     private doorsComponent: Door | undefined;
 
+    constructor(private readonly logger: Logger) {
+        super();
+    }
+
     onStart() {
         const roomModel = this.instance;
         if (roomModel.IsA("Model")) {
             this.createDoor();
         } else {
-            warn("The instance '" + tostring(roomModel) + "' is not a Model!");
+            this.logger.Warn("The instance '" + tostring(roomModel) + "' is not a Model!");
         }
     }
 
@@ -54,8 +59,10 @@ export class Room extends BaseComponent <IRoomAttributes, IRoomComponent> implem
         if(this.doorsComponent) {
             this.doorsComponent.setNumber(this.attributes.Number);
         } else {
-            warn("Door component not initialised.")
-        }      
-        print("i'm room: " + tostring(this.attributes.Number) + " and my door comp is: " + tostring(this.doorsComponent) + " my door model is: " + tostring(this.doorsComponent?.instance));
+            this.logger.Warn("Door component " + tostring(Number) + "not initialised.")
+        }
+        this.logger.Debug("Generated Room: " + tostring(this.attributes.Number)
+                        + " with Door Component: " + tostring(this.doorsComponent)
+                        + " with Door Model: " + tostring(this.doorsComponent?.instance));
     }
 }

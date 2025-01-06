@@ -1,28 +1,31 @@
 import { Service, OnStart, Dependency } from "@flamework/core";
-import { CollectionService, ServerStorage, Workspace } from "@rbxts/services";
+import { ServerStorage, Workspace } from "@rbxts/services";
 import { roomInfos } from "./RoomInfos";
 import { Components } from "@flamework/components";
 import { Room } from "server/components/Room";
+import type { Logger } from "@rbxts/log/out/Logger";
 
 @Service()
 export class RoomGenerationService implements OnStart {
 	private readonly ROOM_STORAGE = ServerStorage.WaitForChild("Rooms") as Folder;
 	private readonly REGULAR_ROOM_STORAGE = this.ROOM_STORAGE.WaitForChild("Regular") as Folder;
 	private readonly NECESSARY_ROOM_STORAGE = this.ROOM_STORAGE.WaitForChild("Necessary") as Folder;
-	private readonly START_ROOMS = 100;
+	private readonly START_ROOMS = 3;
+	private readonly MAX_ACTIVE_ROOMS = 5;
 	private readonly MAX_ATTEMPTS = 10; // Max tries to generate a new room, before the old one is deleted
 	
-	private initialGeneratedRooms = 0;
+	private roomCunter: number = 0;
 	private activeRooms: Model[] = [];
 	private lastTurnDirection = math.random() < 0.5 ? "LEFT" : "RIGHT";	
 	private YDimensionShift = 50;
-	private roomCunter: number = 0;
+
+	constructor(private readonly logger: Logger) {}
 
 	onStart(): void {
-		print("RoomGenerationService starting...");
+		this.logger.Info("Generating Lobby and initial Rooms.");
 		let previousRoom = this.spawnLobby();
 		this.generateInitialRooms(previousRoom);
-		print("RoomGenerationService completed.");
+		this.logger.Info("Lobby and initial Rooms Generation finished.");
 	}
 
 	private spawnLobby(): Model {
@@ -32,10 +35,11 @@ export class RoomGenerationService implements OnStart {
 	}
 
 	private generateInitialRooms(previousRoom: Model) {
-		while(this.initialGeneratedRooms < this.START_ROOMS) {
+		let initialGeneratedRooms = 0;
+		while(initialGeneratedRooms < this.START_ROOMS) {
 			previousRoom = this.generateRoom(previousRoom, 0);
 			this.activeRooms.push(previousRoom);
-			this.initialGeneratedRooms++;
+			initialGeneratedRooms++;
 		}
 	}
 
@@ -66,15 +70,17 @@ export class RoomGenerationService implements OnStart {
 			}
 		});
 
+		this.checkAndDestroyOldRooms();
+
 		// Check for Collision
 		if (this.isRoomColliding(previousRoom, randomRoom) === false) { // valid room
 			return randomRoom;
-		} else if(attempt < this.MAX_ATTEMPTS) { // try to generate a new one			
+		} else if(attempt < this.MAX_ATTEMPTS) { // try to generate a new one		
+			this.logger.Info("Max regeneration attempts exceeded, destroying room.")	
 			randomRoom.Destroy();
 			this.roomCunter -= 1;
 			return this.generateRoom(previousRoom, attempt);
 		} else { // if regeneration wont work, then move room in y dimension
-			print("resolve room");
 			this.solveOverlapping(previousRoom, randomRoom);
 			return randomRoom;
 		}
@@ -114,6 +120,16 @@ export class RoomGenerationService implements OnStart {
 			}
 	}
 
+	private checkAndDestroyOldRooms(): void {
+		while (this.activeRooms.size() > this.MAX_ACTIVE_ROOMS) {
+			const oldestRoom = this.activeRooms.shift();
+			if (oldestRoom) {
+				this.logger.Info(`Destroying room: ${oldestRoom.Name}`);
+				oldestRoom.Destroy();
+			}
+		}
+	}
+
 	private isRoomColliding(previousRoom: Model, nextRoom: Model): boolean {
 		const [position, size] = nextRoom.GetBoundingBox();
 		const boundingBox = new Instance("Part");
@@ -142,6 +158,7 @@ export class RoomGenerationService implements OnStart {
 	
 	private solveOverlapping(previousRoom: Model, nextRoom: Model) {
 		// change behaviour of door collision to glitch for the previous room
+		this.logger.Info("Resolve room " + tostring(this.roomCunter));
 		let PrimaryPart: BasePart = nextRoom.PrimaryPart as BasePart;
 		nextRoom.PivotTo(PrimaryPart.CFrame.mul(new CFrame(0, this.YDimensionShift, 0)));
 		this.YDimensionShift += 50;

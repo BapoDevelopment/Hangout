@@ -3,6 +3,7 @@ import { Zone } from "@rbxts/zone-plus";
 import { TweenService } from "@rbxts/services";
 import { Flamework, OnStart } from "@flamework/core";
 import { AudioService } from "server/services/AudioService";
+import { Logger } from "@rbxts/log/out/Logger";
 
 enum DoorState {
     UNOPEN = "UNOPEN",
@@ -43,7 +44,7 @@ export class Door extends BaseComponent <IDoorAttributes, IDoorComponent> implem
 
     private state: DoorState = DoorState.UNOPEN;
 
-    constructor(private audioService: AudioService) {
+    constructor(private audioService: AudioService, private readonly logger: Logger) {
         super();
     }
 
@@ -55,10 +56,10 @@ export class Door extends BaseComponent <IDoorAttributes, IDoorComponent> implem
                 const sensorZone = new Zone(this.instance.SensorPart);
                 sensorZone.playerEntered.Connect((player: Player) => this.handleSensor(player));
             } else {
-                warn("The tagged Door is not a Model!");
+                this.logger.Warn("The tagged Door is not a Model!");
             }
         } else {
-            print("doorModel not initiliased");
+            this.logger.Warn("Door Model not initiliased.");
         }
     }
     
@@ -78,6 +79,7 @@ export class Door extends BaseComponent <IDoorAttributes, IDoorComponent> implem
     private handleSensor(player: Player) {
         if (this.state === DoorState.UNOPEN) {
             this.state = DoorState.OPEN;
+            this.logger.Debug(tostring(player) + " opened Door " + tostring(this.attributes.Number));
             const tweenInfo = new TweenInfo(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.Out, 0, false, 0);
             const targetProperties = {
                 CFrame: this.instance.Hinge.CFrame.mul(CFrame.Angles(0, 9, 0))
