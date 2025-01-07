@@ -4,6 +4,7 @@ import { TweenService } from "@rbxts/services";
 import { Flamework, OnStart } from "@flamework/core";
 import { AudioService } from "server/services/AudioService";
 import { Logger } from "@rbxts/log/out/Logger";
+import { RoomGenerationService } from "server/services/RoomGenerationService";
 
 enum DoorState {
     UNOPEN = "UNOPEN",
@@ -44,7 +45,9 @@ export class Door extends BaseComponent <IDoorAttributes, IDoorComponent> implem
 
     private state: DoorState = DoorState.UNOPEN;
 
-    constructor(private audioService: AudioService, private readonly logger: Logger) {
+    constructor(private roomGenerationService: RoomGenerationService
+        , private audioService: AudioService
+        , private readonly logger: Logger) {
         super();
     }
 
@@ -88,6 +91,8 @@ export class Door extends BaseComponent <IDoorAttributes, IDoorComponent> implem
             
             tween.Play();
             this.audioService.playSound(this.instance.open);
+            
+            this.roomGenerationService.generateNextRoom();
         }
     }
 }

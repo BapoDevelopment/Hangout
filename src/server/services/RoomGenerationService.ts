@@ -4,6 +4,7 @@ import { roomInfos } from "./RoomInfos";
 import { Components } from "@flamework/components";
 import { Room } from "server/components/Room";
 import type { Logger } from "@rbxts/log/out/Logger";
+import { VoidMonster } from "server/services/VoidMonster";
 
 @Service()
 export class RoomGenerationService implements OnStart {
@@ -13,32 +14,29 @@ export class RoomGenerationService implements OnStart {
 	private readonly START_ROOMS = 3;
 	private readonly MAX_ACTIVE_ROOMS = 5;
 	private readonly MAX_ATTEMPTS = 10; // Max tries to generate a new room, before the old one is deleted
-	
+
+	private components = Dependency<Components>();
 	private roomCunter: number = 0;
+	private lobby: Model | undefined;
 	private activeRooms: Model[] = [];
 	private lastTurnDirection = math.random() < 0.5 ? "LEFT" : "RIGHT";	
 	private YDimensionShift = 50;
 
-	constructor(private readonly logger: Logger) {}
+	constructor(private voidMonster: VoidMonster, private readonly logger: Logger) {}
 
 	onStart(): void {
 		this.logger.Info("Generating Lobby and initial Rooms.");
-		let previousRoom = this.spawnLobby();
+		this.lobby = this.NECESSARY_ROOM_STORAGE.FindFirstChild("Lobby") as Model;
+		this.lobby.Parent = Workspace;
+		let previousRoom = this.lobby;
 		this.generateInitialRooms(previousRoom);
 		this.logger.Info("Lobby and initial Rooms Generation finished.");
-	}
-
-	private spawnLobby(): Model {
-		const lobby = this.NECESSARY_ROOM_STORAGE.FindFirstChild("Lobby") as Model;
-		lobby.Parent = Workspace;
-		return lobby;
 	}
 
 	private generateInitialRooms(previousRoom: Model) {
 		let initialGeneratedRooms = 0;
 		while(initialGeneratedRooms < this.START_ROOMS) {
 			previousRoom = this.generateRoom(previousRoom, 0);
-			this.activeRooms.push(previousRoom);
 			initialGeneratedRooms++;
 		}
 	}
@@ -55,14 +53,13 @@ export class RoomGenerationService implements OnStart {
 		randomRoom.Parent = Workspace;
 
 		// Create Room Component
-		const components = Dependency<Components>();
 		let roomComponent: Room | undefined;
-		roomComponent = components.getComponent<Room>(randomRoom);
+		roomComponent = this.components.getComponent<Room>(randomRoom);
 		if(roomComponent) {
 			roomComponent.setNumber(this.roomCunter);
 			this.roomCunter += 1;			
 		}
-		components.onComponentAdded<Room>((value, instance) => {
+		this.components.onComponentAdded<Room>((value, instance) => {
 			if(instance === randomRoom) {
 				roomComponent = value;
 				roomComponent.setNumber(this.roomCunter);
@@ -72,6 +69,7 @@ export class RoomGenerationService implements OnStart {
 
 		this.checkAndDestroyOldRooms();
 
+		this.activeRooms.push(randomRoom);
 		// Check for Collision
 		if (this.isRoomColliding(previousRoom, randomRoom) === false) { // valid room
 			return randomRoom;
@@ -79,11 +77,17 @@ export class RoomGenerationService implements OnStart {
 			this.logger.Info("Max regeneration attempts exceeded, destroying room.")	
 			randomRoom.Destroy();
 			this.roomCunter -= 1;
+			this.activeRooms.pop();
 			return this.generateRoom(previousRoom, attempt);
 		} else { // if regeneration wont work, then move room in y dimension
 			this.solveOverlapping(previousRoom, randomRoom);
 			return randomRoom;
 		}
+	}
+
+	public generateNextRoom(): Model {
+		const lastRoom: Model = this.activeRooms[this.activeRooms.size() - 1]
+		return this.generateRoom(lastRoom, 0);
 	}
 
 	private getRandomRoom(previousRoom: Model): Model {
@@ -124,9 +128,19 @@ export class RoomGenerationService implements OnStart {
 		while (this.activeRooms.size() > this.MAX_ACTIVE_ROOMS) {
 			const oldestRoom = this.activeRooms.shift();
 			if (oldestRoom) {
+				const players: Player[] | undefined = this.components.getComponent<Room>(oldestRoom)?.getPlayers();
+				if(players) {
+					this.voidMonster.attack(players, this.activeRooms);
+				}
 				this.logger.Info(`Destroying room: ${oldestRoom.Name}`);
 				oldestRoom.Destroy();
 			}
+		}
+		if(this.roomCunter > this.activeRooms.size() + 1 && !(this.lobby?.Parent === undefined)) {
+			if(this.lobby) {
+				this.lobby.Destroy();
+			}
+			this.logger.Debug("Destroyed Lobby.");
 		}
 	}
 
