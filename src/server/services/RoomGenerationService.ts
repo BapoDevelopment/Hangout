@@ -8,11 +8,9 @@ import { VoidMonster } from "server/services/VoidMonster";
 
 @Service()
 export class RoomGenerationService implements OnStart {
-	private readonly ROOM_STORAGE = ServerStorage.WaitForChild("Rooms") as Folder;
-	private readonly REGULAR_ROOM_STORAGE = this.ROOM_STORAGE.WaitForChild("Regular") as Folder;
-	private readonly NECESSARY_ROOM_STORAGE = this.ROOM_STORAGE.WaitForChild("Necessary") as Folder;
-	private readonly START_ROOMS = 3;
-	private readonly MAX_ACTIVE_ROOMS = 5;
+	private readonly START_ROOMS = 95;
+	private readonly TOTAL_ROOMS = 100;
+	private readonly MAX_ACTIVE_ROOMS = 100;
 	private readonly MAX_ATTEMPTS = 10; // Max tries to generate a new room, before the old one is deleted
 
 	private components = Dependency<Components>();
@@ -26,7 +24,7 @@ export class RoomGenerationService implements OnStart {
 
 	onStart(): void {
 		this.logger.Info("Generating Lobby and initial Rooms.");
-		this.lobby = this.NECESSARY_ROOM_STORAGE.FindFirstChild("Lobby") as Model;
+		this.lobby = ServerStorage.Rooms.Necessary.Lobby;
 		this.lobby.Parent = Workspace;
 		let previousRoom = this.lobby;
 		this.generateInitialRooms(previousRoom);
@@ -85,9 +83,25 @@ export class RoomGenerationService implements OnStart {
 		}
 	}
 
-	public generateNextRoom(): Model {
+	public generateNextRoom(): void {
 		const lastRoom: Model = this.activeRooms[this.activeRooms.size() - 1]
-		return this.generateRoom(lastRoom, 0);
+		this.logger.Warn("roomCounter: " + tostring(this.roomCunter));
+		if(this.roomCunter < this.TOTAL_ROOMS) {
+			this.generateRoom(lastRoom, 0);
+		} else if((this.roomCunter === this.TOTAL_ROOMS) && (Workspace.FindFirstChild("Room100") === undefined)) {
+			// spawn room 100
+			this.logger.Info("Generating Room 100.");
+			assert(lastRoom.PrimaryPart, "Room 100's PrimaryPart not found.");
+			const room100: Model = ServerStorage.Rooms.Necessary.Room100.Clone();
+			let markers = lastRoom.FindFirstChild("Markers") as Model;
+			if(markers) {
+				let exit = markers.FindFirstChild("Exit") as Part;
+				if(exit) {
+					room100.PivotTo(exit.CFrame);
+					room100.Parent = Workspace;		
+				}
+			}
+		}
 	}
 
 	private getRandomRoom(previousRoom: Model): Model {
@@ -98,11 +112,11 @@ export class RoomGenerationService implements OnStart {
 
 		const randomWeight: number = math.random(0, totalWeight);
 		let currentWeight: number = 0;
-		let randomRoom: Model = this.REGULAR_ROOM_STORAGE.FindFirstChild("Room1") as Model;
+		let randomRoom: Model = ServerStorage.Rooms.Regular.Room1;
 		for (let i = 1; i < roomInfos.size(); i++) {
 			currentWeight += roomInfos[i].weight;
 			if (randomWeight <= currentWeight) {
-				randomRoom = this.REGULAR_ROOM_STORAGE.GetChildren()[i - 1] as Model;
+				randomRoom =ServerStorage.Rooms.Regular.GetChildren()[i - 1] as Model;
 				break;
 			}
 		}
