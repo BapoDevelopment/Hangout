@@ -68,19 +68,21 @@ export class RoomGenerationService implements OnStart {
 		this.checkAndDestroyOldRooms();
 
 		this.activeRooms.push(randomRoom);
-		// Check for Collision
-		if (this.isRoomColliding(previousRoom, randomRoom) === false) { // valid room
-			return randomRoom;
-		} else if(attempt < this.MAX_ATTEMPTS) { // try to generate a new one		
+		const isRoomCollidingWith: boolean = this.isRoomColliding(previousRoom, randomRoom);
+		if(isRoomCollidingWith && attempt < this.MAX_ATTEMPTS) { // try to generate a new one		
 			this.logger.Info("Max regeneration attempts exceeded, destroying room.")	
 			randomRoom.Destroy();
 			this.roomCunter -= 1;
 			this.activeRooms.pop();
 			return this.generateRoom(previousRoom, attempt);
-		} else { // if regeneration wont work, then move room in y dimension
+		} else if(isRoomCollidingWith) { // if regeneration wont work, then move room in y dimension
 			this.solveOverlapping(previousRoom, randomRoom);
-			return randomRoom;
 		}
+
+		if(roomComponent) {
+			roomComponent.furniture();
+		}
+		return randomRoom;
 	}
 
 	public generateNextRoom(): void {

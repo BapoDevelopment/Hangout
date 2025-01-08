@@ -1,9 +1,10 @@
 import { Component, BaseComponent, Components } from "@flamework/components";
-import { ServerStorage } from "@rbxts/services";
+import { CollectionService, ServerStorage } from "@rbxts/services";
 import { Dependency, Flamework, OnStart } from "@flamework/core";
 import { Door } from "./Doors";
 import { Logger } from "@rbxts/log/out/Logger";
 import Zone from "@rbxts/zone-plus/src/Zone";
+import { Drawer } from "./Drawer";
 
 interface IRoomComponent extends Instance {
     Build: Model;
@@ -13,6 +14,7 @@ interface IRoomComponent extends Instance {
         TeleportPosition: BasePart
     };
     Zone: Model;
+    Forniture: Folder;
 }
 const instanceGuard = Flamework.createGuard<IRoomComponent>();
 
@@ -28,7 +30,8 @@ interface IRoomAttributes {
 export class Room extends BaseComponent <IRoomAttributes, IRoomComponent> implements OnStart {
     private doorsComponent: Door | undefined;
     private zone: Zone | undefined;
-
+    private drawers: Drawer[] = [];
+    
     constructor(private readonly logger: Logger) {
         super();
     }
@@ -41,6 +44,38 @@ export class Room extends BaseComponent <IRoomAttributes, IRoomComponent> implem
         } else {
             this.logger.Warn("The instance '" + tostring(roomModel) + "' is not a Model!");
         }
+    }
+
+    public furniture() {
+        this.instance.Forniture.GetChildren().forEach(placeholder => {
+            CollectionService.GetTags(placeholder).forEach(tag => {
+                switch (tag) {
+                    case "DrawerPlaceholder":
+                        
+                    const components = Dependency<Components>();
+                        components.onComponentAdded<Drawer>((value, instance) => {
+                            if(instance === newDrawer) {
+                                this.drawers.push(value);
+                            }
+                        });
+                
+                        const newDrawer = ServerStorage.Furniture.Drawer.Clone();
+                        if(!placeholder.IsA("BasePart")) { 
+                            this.logger.Warn("Instance " + tostring(placeholder) + " is tagged with " + tostring(tag) + " but is not a BasePart.");
+                            break; 
+                        }
+                        placeholder.Transparency = 1;
+                        newDrawer.PivotTo(placeholder.CFrame);
+                        newDrawer.Parent = this.instance;
+                
+                        //this.doorsComponent = components.addComponent<Door>(newDrawer);
+
+                        break;
+                    default:
+                        break;
+                }
+            });
+        });
     }
 
     private createDoor() {

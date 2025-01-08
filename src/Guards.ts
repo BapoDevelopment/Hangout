@@ -13,5 +13,8 @@ declare global {
                 Room1: Model;
             }
         };
+        Furniture: Folder & {
+            Drawer: Model;
+        }
     }
 }
