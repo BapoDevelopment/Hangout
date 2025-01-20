@@ -3,6 +3,7 @@ declare global {
     interface ServerStorage extends Instance {
         Doors: Folder & {
             Regular: Model;
+            Locked: Model;
         };
         Rooms: Folder & {
             Necessary: Folder & {
@@ -15,6 +16,9 @@ declare global {
         };
         Furniture: Folder & {
             Drawer: Model;
+        };
+        Tools: Folder & {
+            Key: MeshPart;
         }
     }
 }

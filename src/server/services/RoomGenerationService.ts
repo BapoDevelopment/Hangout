@@ -8,9 +8,9 @@ import { VoidMonster } from "server/services/VoidMonster";
 
 @Service()
 export class RoomGenerationService implements OnStart {
-	private readonly START_ROOMS = 95;
+	private readonly START_ROOMS = 10;
 	private readonly TOTAL_ROOMS = 100;
-	private readonly MAX_ACTIVE_ROOMS = 100;
+	private readonly MAX_ACTIVE_ROOMS = 10;
 	private readonly MAX_ATTEMPTS = 10; // Max tries to generate a new room, before the old one is deleted
 
 	private components = Dependency<Components>();
@@ -54,14 +54,12 @@ export class RoomGenerationService implements OnStart {
 		let roomComponent: Room | undefined;
 		roomComponent = this.components.getComponent<Room>(randomRoom);
 		if(roomComponent) {
-			roomComponent.setNumber(this.roomCunter);
-			this.roomCunter += 1;			
+			this.roomComponentAdded(roomComponent);	
 		}
 		this.components.onComponentAdded<Room>((value, instance) => {
 			if(instance === randomRoom) {
 				roomComponent = value;
-				roomComponent.setNumber(this.roomCunter);
-				this.roomCunter += 1;
+				this.roomComponentAdded(roomComponent);
 			}
 		});
 
@@ -87,7 +85,6 @@ export class RoomGenerationService implements OnStart {
 
 	public generateNextRoom(): void {
 		const lastRoom: Model = this.activeRooms[this.activeRooms.size() - 1]
-		this.logger.Warn("roomCounter: " + tostring(this.roomCunter));
 		if(this.roomCunter < this.TOTAL_ROOMS) {
 			this.generateRoom(lastRoom, 0);
 		} else if((this.roomCunter === this.TOTAL_ROOMS) && (Workspace.FindFirstChild("Room100") === undefined)) {
@@ -192,5 +189,10 @@ export class RoomGenerationService implements OnStart {
 		let PrimaryPart: BasePart = nextRoom.PrimaryPart as BasePart;
 		nextRoom.PivotTo(PrimaryPart.CFrame.mul(new CFrame(0, this.YDimensionShift, 0)));
 		this.YDimensionShift += 50;
+	}
+
+	private roomComponentAdded(room: Room): void {
+		room.setNumber(this.roomCunter);
+		this.roomCunter += 1;
 	}
 }
