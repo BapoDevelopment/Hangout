@@ -23,5 +23,7 @@ export class Key extends BaseComponent<IKeyAttributes, IKeyComponent> implements
 
     public setNumber(Number: number): void {
         this.attributes.Door = Number;
+        this.instance.SetAttribute("Door", Number);
+        print("Set key number: " + tostring(Number));
     }
 }

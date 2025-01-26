@@ -18,7 +18,12 @@ declare global {
             Drawer: Model;
         };
         Tools: Folder & {
-            Key: MeshPart;
+            Key: Tool & {
+                Handle: MeshPart & {
+                    ProximityPromtPosition: Attachment;
+                    ProximityPrompt: ProximityPrompt;
+                };
+            };
         }
     }
 }

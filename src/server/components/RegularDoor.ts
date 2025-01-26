@@ -1,6 +1,5 @@
-import { Component, BaseComponent } from "@flamework/components";
+import { Component } from "@flamework/components";
 import { Zone } from "@rbxts/zone-plus";
-import { TweenService } from "@rbxts/services";
 import { Flamework, OnStart } from "@flamework/core";
 import { AudioService } from "server/services/AudioService";
 import { Logger } from "@rbxts/log/out/Logger";
@@ -12,11 +11,8 @@ interface IRegualarDoorComponent extends IDoorComponent {
     SensorPart: Part;
 }
 
-const instanceGuard = Flamework.createGuard<IRegualarDoorComponent>();
-
 @Component({
     tag: "Door",
-    instanceGuard: instanceGuard,
 })
 export class RegularDoor extends SuperDoor<IDoorAttributes, IRegualarDoorComponent> implements OnStart{
 

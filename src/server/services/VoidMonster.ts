@@ -1,6 +1,6 @@
 import { Components } from "@flamework/components";
 import { Service, OnStart, Dependency } from "@flamework/core";
-import { Room } from "server/components/Room";
+import { Room } from "server/components/Room/Room";
 
 @Service()
 export class VoidMonster implements OnStart {
