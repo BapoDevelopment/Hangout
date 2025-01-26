@@ -40,9 +40,11 @@ export class RoomGenerationService {
 		
 		// Create Room Component
 		let roomComponent: Room = this.components.addComponent<Room>(roomModel);
-		this.roomService.addRegularDoor(roomComponent);
 		roomComponent.setNumber(this.roomCunter);
 		this.roomService.furniture(roomComponent);
+		if(roomComponent.isLocked() === false) {
+			this.roomService.addRegularDoor(roomComponent);
+		}
 
 		this.activeRooms.push(roomComponent);
 

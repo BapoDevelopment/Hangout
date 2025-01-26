@@ -4,6 +4,7 @@ import { OnStart } from "@flamework/core/out/flamework";
 import { Zone } from "@rbxts/zone-plus";
 import { Drawer } from "../Drawer";
 import { IDoorAttributes, IDoorComponent, SuperDoor } from "../SuperDoor";
+import { LockedDoor } from "../LockedDoor";
 
 export interface IRoomComponent extends Instance {
     Build: Model;
@@ -53,5 +54,9 @@ export class SuperRoom<A extends IRoomAttributes, I extends IRoomComponent> exte
 
     public setDoor(door: SuperDoor<IDoorAttributes, IDoorComponent>) {
         this.doorsComponent = door;
+    }
+
+    public isLocked(): boolean {
+        return this.doorsComponent instanceof LockedDoor;
     }
 }

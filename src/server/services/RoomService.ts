@@ -6,6 +6,7 @@ import { Drawer } from "server/components/Drawer";
 import { RegularDoor } from "server/components/RegularDoor";
 import { Room } from "server/components/Room/Room";
 import { IDoorAttributes, IDoorComponent, SuperDoor } from "server/components/SuperDoor";
+import { ServerSettings } from "server/ServerSettings";
 
 @Service()
 export class RoomService {
@@ -30,7 +31,6 @@ export class RoomService {
                 switch (tag) {
                     case "DrawerPlaceholder":
                         const components = Dependency<Components>();
-                        components.onComponentAdded<Drawer>((value, instance) => { this.onDrawerAdded(newDrawer, value, instance, room) });
                 
                         const newDrawer = ServerStorage.Furniture.Drawer.Clone();
                         if(!placeholder.IsA("BasePart")) { 
@@ -41,20 +41,17 @@ export class RoomService {
                         newDrawer.Parent = room.instance;
                         placeholder.Transparency = 1;
 
+                        components.waitForComponent<Drawer>(newDrawer).then((value) => {
+                            room.addDrawer(value);
+                        });
                         break;
                     default:
                         break;
                 }
             });
         });
-    }
-
-    private onDrawerAdded(newDrawer: Model, value: Drawer, instance: Instance, room: Room) {
-        if(instance === newDrawer) {
-            room.addDrawer(value);
-            if(math.round(math.random(0, 1)) === 1) {
-                room.lock();
-            }
+        if(math.random() * 100 < ServerSettings.rooms.doorLockedProbability) {
+            room.lock();
         }
     }
 }
