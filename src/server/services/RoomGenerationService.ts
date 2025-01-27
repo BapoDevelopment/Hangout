@@ -8,6 +8,7 @@ import { VoidMonster } from "server/services/VoidMonster";
 import { RoomService } from "./RoomService";
 import { Lobby } from "server/components/Room/Lobby";
 import { IRoomAttributes, IRoomComponent, SuperRoom } from "server/components/Room/SuperRoom";
+import { ServerSettings } from "server/ServerSettings";
 
 @Service()
 export class RoomGenerationService {
@@ -24,6 +25,12 @@ export class RoomGenerationService {
 		lobbyModel.Parent = Workspace;
 		const lobbyComponent: Lobby = this.components.addComponent<Lobby>(lobbyModel);
 		this.activeRooms.push(lobbyComponent);
+	}
+	
+	public generateInitialRooms() {
+		for(let i = 0; i < ServerSettings.GAME.START_ROOMS; i++) {
+			this.generateRoom();
+		}
 	}
 
 	public generateRoom(): Room {
