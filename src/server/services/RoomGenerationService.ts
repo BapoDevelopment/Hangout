@@ -45,6 +45,7 @@ export class RoomGenerationService {
 		if(roomComponent.isLocked() === false) {
 			this.roomService.addRegularDoor(roomComponent);
 		}
+		roomComponent.setNumber(this.roomCunter);
 
 		this.activeRooms.push(roomComponent);
 

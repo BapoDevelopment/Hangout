@@ -50,7 +50,7 @@ export class RoomService {
                 }
             });
         });
-        if(math.random() * 100 < ServerSettings.rooms.doorLockedProbability) {
+        if(math.random() * 100 < ServerSettings.ROOMS.DOOR_LOCKED_PROBABILITY) {
             room.lock();
         }
     }

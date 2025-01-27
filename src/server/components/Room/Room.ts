@@ -77,15 +77,11 @@ export class Room extends SuperRoom <IRoomAttributes, IRegularRoomComponent> {
         }
 
         const components = Dependency<Components>();
-        components.onComponentAdded<LockedDoor>((value, instance) => {
-            if(instance === lockedDoor) {
-                this.doorsComponent = value;
-                this.doorsComponent.setNumber(number);
-            }
-        });
-
         const lockedDoor = ServerStorage.Doors.Locked.Clone();
         lockedDoor.PivotTo(this.instance.Markers.Exit.CFrame);
         lockedDoor.Parent = this.instance;
+        components.waitForComponent<LockedDoor>(lockedDoor).then((value) => {
+            this.doorsComponent = value;
+        });
     }
 }

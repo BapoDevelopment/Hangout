@@ -39,6 +39,7 @@ export class SuperDoor<A extends IDoorAttributes, I extends IDoorComponent> exte
     onStart(): void {}
 
     public setNumber(Number: number): void {
+        this.logger?.Warn("Locked Door with nr: " + tostring(Number));
         this.attributes.Number = Number;
         let prefix: string = "";
 

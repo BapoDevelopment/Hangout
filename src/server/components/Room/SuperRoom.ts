@@ -1,10 +1,11 @@
 import { BaseComponent } from "@flamework/components/out/baseComponent";
 import { Component } from "@flamework/components/out/components";
-import { OnStart } from "@flamework/core/out/flamework";
+import { Flamework, OnStart } from "@flamework/core/out/flamework";
 import { Zone } from "@rbxts/zone-plus";
 import { Drawer } from "../Drawer";
 import { IDoorAttributes, IDoorComponent, SuperDoor } from "../SuperDoor";
 import { LockedDoor } from "../LockedDoor";
+import { Reflect } from "@flamework/core";
 
 export interface IRoomComponent extends Instance {
     Build: Model;
