@@ -1,17 +1,17 @@
-import { Components } from "@flamework/components";
-import { Service, OnStart, Dependency } from "@flamework/core";
-import { Room } from "server/components/Room/Room";
+import { Service, OnStart } from "@flamework/core";
+import { Logger } from "@rbxts/log/out/Logger";
+import { IRoomAttributes, IRoomComponent, SuperRoom } from "server/components/Room/SuperRoom";
 
 @Service()
 export class VoidMonster implements OnStart {
     
-    onStart(): void {
-        print("hi");
-    }
+    onStart(): void {}
 
-    public attack(players: Player[], activeRooms: Model[]) {
+    constructor(private readonly logger: Logger) {}
+
+    public attack(players: Player[], activeRooms: SuperRoom<IRoomAttributes, IRoomComponent>[]) {
         if(!players) { return; }
-        const latestRoom: Room | undefined = this.getLatestRoomWithPlayerIn(activeRooms);
+        const latestRoom: SuperRoom<IRoomAttributes, IRoomComponent> | undefined = this.getLatestRoomWithPlayerIn(activeRooms);
         assert(latestRoom, "Void was unable to teleport player to the second last room.");
 
         players.forEach(player => {
@@ -23,30 +23,32 @@ export class VoidMonster implements OnStart {
                         if(player.Character.PrimaryPart) {
                             player.Character.PrimaryPart.PivotTo(latestRoom.instance.Markers.TeleportPosition.CFrame);
                         } else {
-                            //this.logger.Warn("Character hasn't a PrimaryPart, so player will be killed.")
+                            this.logger.Warn("Character hasn't a PrimaryPart, so player will be killed.")
                             humanoid.Health = humanoid.Health - humanoid.Health;
                         }
                     }
                 }
             }
-            //this.logger.Debug("Player in last room: " + player.GetFullName());
+            this.logger.Debug("Player in last room: " + player.GetFullName());
         });
     }
 
-    private getLatestRoomWithPlayerIn(activeRooms: Model[]): Room | undefined{
-        const components = Dependency<Components>();
+    private getLatestRoomWithPlayerIn(activeRooms: SuperRoom<IRoomAttributes, IRoomComponent>[]): SuperRoom<IRoomAttributes, IRoomComponent> | undefined{
+        let latestRoomWithPlayerIn: SuperRoom<IRoomAttributes, IRoomComponent> | undefined;
         for (let i = activeRooms.size() - 1; i >= 0; i--) {
-            const room: Room | undefined = components.getComponent<Room>(activeRooms[i]);
-            if(room) {
-                if(room instanceof Room) {
-                    const playersInRoom: Player[] | undefined = room.getPlayers();
-                    if(playersInRoom && playersInRoom.size() > 0) {
-                        return room;
-                    }
+            if(activeRooms[i]) {
+                const playersInRoom: Player[] | undefined = activeRooms[i].getPlayers();
+                this.logger.Info("A i:" + tostring(i) + " - " + tostring(playersInRoom?.size()));
+                if(playersInRoom && playersInRoom.size() > 0) {
+                    this.logger.Info("B");
+                    latestRoomWithPlayerIn = activeRooms[i];
+                    this.logger.Info("C");
+                    break;
                 }
+                this.logger.Info("H");
             }
         }
-        //this.logger.Warn("No room with player found. Returning second oldest room.")
-        return components.getComponent(activeRooms[2]);
+        this.logger.Warn("No room with player found. Returning second oldest room.");
+        return activeRooms[2];
     }
 }

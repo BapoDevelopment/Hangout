@@ -60,7 +60,11 @@ export class RoomGenerationService {
 		return roomComponent;
 	}
 
-	private generateRoom100(): void {
+	public getRoomCounter(): number {
+		return this.roomCunter;
+	}
+
+	public generateRoom100(): void {
 		this.logger.Info("Generating Room 100.");
 
 		let previousRoom = this.activeRooms[this.activeRooms.size() - 1];
@@ -102,25 +106,34 @@ export class RoomGenerationService {
 			}
 	}
 
-	/*private checkAndDestroyOldRooms(): void {
-		while (this.activeRooms.size() > this.MAX_ACTIVE_ROOMS) {
-			const oldestRoom = this.activeRooms.shift();
+	public checkAndDestroyOldRooms(): void {
+		while (this.activeRooms.size() > ServerSettings.GAME.MAX_ACTIVE_ROOMS) {
+			const oldestRoom: SuperRoom<IRoomAttributes, IRoomComponent> | undefined = this.activeRooms.shift();
 			if (oldestRoom) {
-				const players: Player[] | undefined = this.components.getComponent<Room>(oldestRoom)?.getPlayers();
+				const players: Player[] | undefined = oldestRoom.getPlayers();
 				if(players) {
-					this.voidMonster.attack(players, this.activeRooms);
+					if(players.size() > 0) {
+						this.voidMonster.attack(players, this.activeRooms);
+					}
 				}
-				this.logger.Info(`Destroying room: ${oldestRoom.Name}`);
-				oldestRoom.Destroy();
+				this.logger.Info(`Destroying room: ${oldestRoom.getName()}`);
+				oldestRoom.destroy();
 			}
 		}
-		if(this.roomCunter > this.activeRooms.size() + 1 && !(this.lobby?.Parent === undefined)) {
-			if(this.lobby) {
-				this.lobby.Destroy();
-			}
-			this.logger.Debug("Destroyed Lobby.");
+	}
+
+	public blockLastDoor(): void {
+		const oldestRoom: SuperRoom<IRoomAttributes, IRoomComponent> | undefined = this.activeRooms[0];
+		assert(oldestRoom, "Unable to block last door, because there is no last room.");
+
+		const blockedDoor: Model = ServerStorage.Doors.Blocked.Clone();
+		
+		const entranceMarker: Part = oldestRoom.instance.Markers.FindFirstChild("Entrance") as Part;
+		if(entranceMarker) {
+			blockedDoor.PivotTo(entranceMarker.CFrame);
+			blockedDoor.Parent = oldestRoom.instance;
 		}
-	}*/
+	}
 
 	private isRoomColliding(nextRoom: Model): boolean {
 		let previousRoom = this.activeRooms[this.activeRooms.size() - 1];

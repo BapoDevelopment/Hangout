@@ -21,7 +21,6 @@ interface IRegularRoomComponent extends IRoomComponent {
     tag: "Room",
 })
 export class Room extends SuperRoom <IRoomAttributes, IRegularRoomComponent> {
-
     constructor(private readonly logger: Logger) {
         super();
     }
@@ -61,7 +60,7 @@ export class Room extends SuperRoom <IRoomAttributes, IRegularRoomComponent> {
             }
         });
 
-        components.addComponent<Key>(newKey);
+        this.keyComponent = components.addComponent<Key>(newKey);
         newKey.Parent = hidingSpotDrawer.instance.TopDraw.Plate.ItemLocation;
         this.createLockedDoor();
     }

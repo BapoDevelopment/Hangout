@@ -2,8 +2,8 @@ import { Component } from "@flamework/components";
 import { OnStart } from "@flamework/core";
 import { AudioService } from "server/services/AudioService";
 import { Logger } from "@rbxts/log/out/Logger";
-import { RoomGenerationService } from "server/services/RoomGenerationService";
 import { IDoorAttributes, IDoorComponent, SuperDoor } from "server/components/SuperDoor";
+import { GameService } from "server/services/GameService";
 
 interface ILockedDoorComponent extends IDoorComponent {
     PrimaryPart: Part;
@@ -33,12 +33,12 @@ interface ILockedDoorComponent extends IDoorComponent {
 })
 export class LockedDoor extends SuperDoor<IDoorAttributes, ILockedDoorComponent> implements OnStart{
 
-    constructor(protected roomGenerationService: RoomGenerationService
+    constructor(protected gameService: GameService
         , protected audioService: AudioService
         , protected readonly logger: Logger) {
         super();
         this.audioService = audioService;
-        this.roomGenerationService = roomGenerationService;
+        this.gameService = gameService;
     }
 
     onStart() {

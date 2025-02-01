@@ -1,16 +1,17 @@
 import { BaseComponent } from "@flamework/components/out/baseComponent";
 import { Component } from "@flamework/components/out/components";
-import { Flamework, OnStart } from "@flamework/core/out/flamework";
+import { OnStart } from "@flamework/core/out/flamework";
 import { Zone } from "@rbxts/zone-plus";
 import { Drawer } from "../Drawer";
 import { IDoorAttributes, IDoorComponent, SuperDoor } from "../SuperDoor";
 import { LockedDoor } from "../LockedDoor";
-import { Reflect } from "@flamework/core";
+import { Key } from "../Key";
 
 export interface IRoomComponent extends Instance {
     Build: Model;
     Markers: Instance & {
         Exit: BasePart
+        TeleportPosition: BasePart
     };
     Zone: Model;
     Forniture: Folder;
@@ -26,6 +27,7 @@ export class SuperRoom<A extends IRoomAttributes, I extends IRoomComponent> exte
     protected doorsComponent: SuperDoor<IDoorAttributes, IDoorComponent> | undefined;
     protected zone: Zone | undefined;
     protected drawers: Drawer[] = [];
+    protected keyComponent: Key | undefined;
 
     onStart() {
         const roomModel = this.instance;
@@ -59,5 +61,20 @@ export class SuperRoom<A extends IRoomAttributes, I extends IRoomComponent> exte
 
     public isLocked(): boolean {
         return this.doorsComponent instanceof LockedDoor;
+    }
+
+    public getName(): string {
+        return this.instance.Name;
+    }
+
+    public destroy(): void {
+        super.destroy();
+        this.doorsComponent?.destroy();
+        this.keyComponent?.destroy();
+        this.zone?.destroy();
+        this.drawers.forEach(drawer => {
+            drawer.destroy();
+        });
+        this.instance.Destroy();
     }
 }

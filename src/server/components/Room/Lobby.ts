@@ -8,6 +8,7 @@ interface ILobbyRoomComponent extends IRoomComponent {
     Markers: Instance & {
         Entrance: BasePart,
         Exit: BasePart
+        TeleportPosition: BasePart
     };
     Zone: Model;
     Forniture: Folder;

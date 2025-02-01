@@ -1,11 +1,11 @@
 import { Component } from "@flamework/components";
 import { Zone } from "@rbxts/zone-plus";
-import { Flamework, OnStart } from "@flamework/core";
+import { OnStart } from "@flamework/core";
 import { AudioService } from "server/services/AudioService";
 import { Logger } from "@rbxts/log/out/Logger";
-import { RoomGenerationService } from "server/services/RoomGenerationService";
 import { IDoorAttributes, IDoorComponent, SuperDoor } from "server/components/SuperDoor";
 import { DoorState } from "server/Enum/DoorState";
+import { GameService } from "server/services/GameService";
 
 interface IRegualarDoorComponent extends IDoorComponent {
     SensorPart: Part;
@@ -16,12 +16,12 @@ interface IRegualarDoorComponent extends IDoorComponent {
 })
 export class RegularDoor extends SuperDoor<IDoorAttributes, IRegualarDoorComponent> implements OnStart{
 
-    constructor(protected roomGenerationService: RoomGenerationService
+    constructor(protected gameService: GameService
         , protected audioService: AudioService
         , protected readonly logger: Logger) {
         super();
         this.audioService = audioService;
-        this.roomGenerationService = roomGenerationService;
+        this.gameService = gameService;
     }
 
     onStart() {

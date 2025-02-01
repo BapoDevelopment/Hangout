@@ -5,7 +5,7 @@ import { Logger } from "@rbxts/log/out/Logger";
 import { TweenService } from "@rbxts/services";
 import { DoorState } from "server/Enum/DoorState";
 import { AudioService } from "server/services/AudioService";
-import { RoomGenerationService } from "server/services/RoomGenerationService";
+import { GameService } from "server/services/GameService";
 
 export interface IDoorComponent extends Instance {
     PrimaryPart: Part;
@@ -32,15 +32,14 @@ export interface IDoorAttributes {
 export class SuperDoor<A extends IDoorAttributes, I extends IDoorComponent> extends BaseComponent<A, I> implements OnStart {
     
     protected state: DoorState = DoorState.UNOPEN;
-    protected roomGenerationService: RoomGenerationService | undefined;
+    protected gameService: GameService | undefined;
     protected audioService: AudioService | undefined;
     protected readonly logger: Logger | undefined;
 
     onStart(): void {}
 
-    public setNumber(Number: number): void {
-        this.logger?.Warn("Locked Door with nr: " + tostring(Number));
-        this.attributes.Number = Number;
+    public setNumber(number: number): void {
+        this.attributes.Number = number;
         let prefix: string = "";
 
         if(this.attributes.Number < 10) {
@@ -65,6 +64,11 @@ export class SuperDoor<A extends IDoorAttributes, I extends IDoorComponent> exte
         tween.Play();
         
         if(this.audioService) { this.audioService.playSound(this.instance.open); }
-        if(this.roomGenerationService) { this.roomGenerationService.generateRoom(); }
+        if(this.gameService) { this.gameService.onDoorOpened(); }
+    }
+
+    public destroy(): void {
+        super.destroy();
+        this.instance.Destroy();
     }
 }

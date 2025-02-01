@@ -83,4 +83,9 @@ export class Drawer extends BaseComponent <{}, IDrawerComponent> implements OnSt
         const moveSound: Sound = this.instance.FindFirstChild("move") as Sound;
         this.audioService.playSound(moveSound);
     }
+
+    public destroy(): void {
+        super.destroy();
+        this.instance.Destroy();
+    }
 }

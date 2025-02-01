@@ -4,6 +4,7 @@ declare global {
         Doors: Folder & {
             Regular: Model;
             Locked: Model;
+            Blocked: Model;
         };
         Rooms: Folder & {
             Necessary: Folder & {

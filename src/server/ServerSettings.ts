@@ -1,10 +1,16 @@
 export const ServerSettings = {
     GAME: {
-        START_ROOMS: 10,
+        START_ROOMS: 5,
         TOTAL_ROOMS: 100,
         MAX_ACTIVE_ROOMS: 10,
+        LAST_ROOM: 100,
     },
     ROOMS: {
-        DOOR_LOCKED_PROBABILITY: 10,
+        DOOR_LOCKED_PROBABILITY: -1,
+    },
+    ENTITIES: {
+        VOID: {
+            DMG: 50,
+        },
     },
 };
