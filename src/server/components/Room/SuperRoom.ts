@@ -6,6 +6,7 @@ import { Drawer } from "../Drawer";
 import { IDoorAttributes, IDoorComponent, SuperDoor } from "../SuperDoor";
 import { LockedDoor } from "../LockedDoor";
 import { Key } from "../Key";
+import { Wardrobe } from "../Wardrobe";
 
 export interface IRoomComponent extends Instance {
     Build: Model;
@@ -27,6 +28,7 @@ export class SuperRoom<A extends IRoomAttributes, I extends IRoomComponent> exte
     protected doorsComponent: SuperDoor<IDoorAttributes, IDoorComponent> | undefined;
     protected zone: Zone | undefined;
     protected drawers: Drawer[] = [];
+    protected wardrobes: Wardrobe[] = [];
     protected keyComponent: Key | undefined;
 
     onStart() {
@@ -53,6 +55,10 @@ export class SuperRoom<A extends IRoomAttributes, I extends IRoomComponent> exte
 
     public addDrawer(drawer: Drawer) {
         this.drawers.push(drawer);
+    }
+
+    public addWardrobe(wardrobe: Wardrobe) {
+        this.wardrobes.push(wardrobe);
     }
 
     public setDoor(door: SuperDoor<IDoorAttributes, IDoorComponent>) {

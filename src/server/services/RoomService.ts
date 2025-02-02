@@ -6,6 +6,7 @@ import { Drawer } from "server/components/Drawer";
 import { RegularDoor } from "server/components/RegularDoor";
 import { Room } from "server/components/Room/Room";
 import { IDoorAttributes, IDoorComponent, SuperDoor } from "server/components/SuperDoor";
+import { Wardrobe } from "server/components/Wardrobe";
 import { ServerSettings } from "server/ServerSettings";
 
 @Service()
@@ -28,21 +29,43 @@ export class RoomService {
     public furniture(room: Room) {
         room.instance.Forniture.GetChildren().forEach(placeholder => {
             CollectionService.GetTags(placeholder).forEach(tag => {
-                switch (tag) {
-                    case "DrawerPlaceholder":
-                        const components = Dependency<Components>();
+                const components = Dependency<Components>();
                 
-                        const newDrawer = ServerStorage.Furniture.Drawer.Clone();
-                        if(!placeholder.IsA("BasePart")) { 
-                            this.logger.Warn("Instance " + tostring(placeholder) + " is tagged with " + tostring(tag) + " but is not a BasePart.");
-                            break; 
-                        }
-                        newDrawer.PivotTo(placeholder.CFrame);
-                        newDrawer.Parent = room.instance;
-                        placeholder.Transparency = 1;
+                if(!placeholder.IsA("BasePart")) { 
+                    this.logger.Warn("Instance " + tostring(placeholder) + " is tagged with " + tostring(tag) + " but is not a BasePart.");
+                    return;
+                }
 
-                        components.waitForComponent<Drawer>(newDrawer).then((value) => {
+                let forniture: Model | undefined;
+
+                switch (tag) {
+                    case "DrawerPlaceholder":                
+                        forniture = ServerStorage.Furniture.Drawer.Clone();
+                        break;
+                    case "WardrobePlaceholder":
+                        forniture = ServerStorage.Furniture.Wardrobe.Clone();
+                        break;
+                    default:
+                        break;
+                }
+
+                if(!forniture) {
+                    this.logger.Info("A");
+                    return;
+                }
+                forniture.PivotTo(placeholder.CFrame);
+                forniture.Parent = room.instance;
+                placeholder.Transparency = 1;
+
+                switch (tag) {
+                    case "DrawerPlaceholder":                
+                        components.waitForComponent<Drawer>(forniture).then((value) => {
                             room.addDrawer(value);
+                        });
+                        break;
+                    case "WardrobePlaceholder":
+                        components.waitForComponent<Wardrobe>(forniture).then((value) => {
+                            room.addWardrobe(value);
                         });
                         break;
                     default:

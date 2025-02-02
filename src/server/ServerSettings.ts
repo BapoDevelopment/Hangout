@@ -6,7 +6,7 @@ export const ServerSettings = {
         LAST_ROOM: 100,
     },
     ROOMS: {
-        DOOR_LOCKED_PROBABILITY: -1,
+        DOOR_LOCKED_PROBABILITY: 10,
     },
     ENTITIES: {
         VOID: {
