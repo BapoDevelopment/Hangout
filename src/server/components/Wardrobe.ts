@@ -20,6 +20,10 @@ interface IWardrobeComponent extends Instance {
             Right: Model,
         };
     };
+    Markers: Model & {
+        Entrance: Part,
+        Spot: Part,
+    }
 }
 
 @Component({
@@ -49,17 +53,19 @@ export class Wardrobe extends BaseComponent <{}, IWardrobeComponent> implements 
     }
 
     private open(player: Player): void {
-        this.logger.Info("A");
+        //Check validty of action
         if(this.state === WardrobeState.BLOCKED) { return; }
+        if(!player.Character) { return; }
+        if(!player.Character.FindFirstChild("HumanoidRootPart")) { return; }
         this.state = WardrobeState.BLOCKED;
 
         let leftDoor: Model = this.instance.Build.Doors.Left;
         let rightDoor: Model = this.instance.Build.Doors.Right;
-        this.logger.Info("B");
         if(!leftDoor.PrimaryPart) { return; }
         if(!rightDoor.PrimaryPart) { return; }
 
-        const tweenInfo = new TweenInfo(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.Out, 0, false, 0);
+        //Open wardrobe
+        let tweenInfo = new TweenInfo(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.Out, 0, false, 0);
         let targetProperties = {
             CFrame: leftDoor.PrimaryPart.CFrame.mul(new CFrame(2.5, 0, 0))
         }
@@ -72,6 +78,45 @@ export class Wardrobe extends BaseComponent <{}, IWardrobeComponent> implements 
         tween = TweenService.Create(rightDoor.PrimaryPart, tweenInfo, targetProperties);
         tween.Play();
 
+        //Move Player
+        tweenInfo = new TweenInfo(0.18, Enum.EasingStyle.Quad, Enum.EasingDirection.Out, 0, false, 0);
+        const humanoidRootPart: Part | undefined = player.Character.FindFirstChild("HumanoidRootPart") as Part;
+        let humanoidTargetProperties = {
+            CFrame: this.instance.Markers.Entrance.CFrame
+        }
+        tween = TweenService.Create(humanoidRootPart, tweenInfo, humanoidTargetProperties);
+        tween.Play();
+        tween.Completed.Connect(() => {
+            tweenInfo = new TweenInfo(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.Out, 0, false, 0);
+            let humanoidTargetProperties = {
+                CFrame: this.instance.Markers.Spot.CFrame
+            }
+            tween = TweenService.Create(humanoidRootPart, tweenInfo, humanoidTargetProperties);
+            tween.Play();
+
+            // Close wardrobe
+            tween.Completed.Connect(() => {
+                let leftDoor: Model = this.instance.Build.Doors.Left;
+                let rightDoor: Model = this.instance.Build.Doors.Right;
+                if(!leftDoor.PrimaryPart) { return; }
+                if(!rightDoor.PrimaryPart) { return; }
+
+                tweenInfo = new TweenInfo(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.Out, 0, false, 0);
+                targetProperties = {
+                    CFrame: leftDoor.PrimaryPart.CFrame.mul(new CFrame(-2.5, 0, 0))
+                }
+                tween = TweenService.Create(leftDoor.PrimaryPart, tweenInfo, targetProperties);
+                tween.Play();
+        
+                targetProperties = {
+                    CFrame: rightDoor.PrimaryPart.CFrame.mul(new CFrame(2.5, 0, 0))
+                }
+                tween = TweenService.Create(rightDoor.PrimaryPart, tweenInfo, targetProperties);
+                tween.Play();
+            });
+        });
+
+        //Play open Sound
         const openSound: Sound = this.instance.FindFirstChild("open") as Sound;
         this.audioService.playSound(openSound);
     }
