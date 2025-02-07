@@ -50,7 +50,6 @@ export class RoomService {
                 }
 
                 if(!forniture) {
-                    this.logger.Info("A");
                     return;
                 }
                 forniture.PivotTo(placeholder.CFrame);

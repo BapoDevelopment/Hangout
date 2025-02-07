@@ -4,7 +4,9 @@ interface ClientToServerEvents {
     leaveWardrobe(): void;
 }
 
-interface ServerToClientEvents {}
+interface ServerToClientEvents {
+    playAnimationID(animationID: string): void;
+}
 
 interface ClientToServerFunctions {}
 

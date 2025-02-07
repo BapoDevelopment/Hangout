@@ -4,6 +4,8 @@ import { Logger } from "@rbxts/log/out/Logger";
 import { TweenService } from "@rbxts/services"
 import { Events } from "server/network";
 import { AudioService } from "server/services/AudioService";
+import { CollisionGroupService } from "server/services/CollisionGroupService";
+import { SharedSettings } from "shared/SharedSettings";
 
 enum WardrobeState {
     OPEN = "true",
@@ -24,7 +26,8 @@ interface IWardrobeComponent extends Instance {
     Markers: Model & {
         Entrance: Part,
         Spot: Part,
-    }
+    };
+    Blocker: Part;
 }
 
 @Component({
@@ -36,7 +39,7 @@ export class Wardrobe extends BaseComponent <{}, IWardrobeComponent> implements 
     private playerInside: Player | undefined;
     private leaveWardrobeConnection: RBXScriptConnection | undefined;
 
-    constructor(private audioService: AudioService, private readonly logger: Logger) {
+    constructor(private audioService: AudioService, private collisionGroupService: CollisionGroupService, private readonly logger: Logger) {
         super();
     }
 
@@ -71,6 +74,14 @@ export class Wardrobe extends BaseComponent <{}, IWardrobeComponent> implements 
         let rightDoor: Model = this.instance.Build.Doors.Right;
         if(!leftDoor.PrimaryPart) { return; }
         if(!rightDoor.PrimaryPart) { return; }
+
+        this.collisionGroupService.setCollisionGroup(player.Character, "Wardrobe");
+
+        const humanoid: Humanoid | undefined = player.Character.FindFirstChild("Humanoid") as Humanoid;
+        if(humanoid) {
+            humanoid.WalkSpeed = 0;
+        }
+        Events.playAnimationID(player, SharedSettings.ANIMATIONS.WARDROBE.ENTER);
 
         //Open wardrobe
         let tweenInfo = new TweenInfo(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.Out, 0, false, 0);
@@ -126,6 +137,7 @@ export class Wardrobe extends BaseComponent <{}, IWardrobeComponent> implements 
                     if(player.Character) {
                         player.Character.SetAttribute("InWardrobe", true);
                         this.playerInside = player;
+                        this.collisionGroupService.setCollisionGroup(player.Character, "Character");
                     }
                 });
             });
@@ -145,6 +157,7 @@ export class Wardrobe extends BaseComponent <{}, IWardrobeComponent> implements 
         }
         if(!player.Character.FindFirstChild("HumanoidRootPart")) { return; }
         player.Character.SetAttribute("InWardrobe", false);
+        this.collisionGroupService.setCollisionGroup(player.Character, "Wardrobe");
 
         let leftDoor: Model = this.instance.Build.Doors.Left;
         let rightDoor: Model = this.instance.Build.Doors.Right;
@@ -172,13 +185,27 @@ export class Wardrobe extends BaseComponent <{}, IWardrobeComponent> implements 
         }
 
         //Move Player
-        tweenInfo = new TweenInfo(0.18, Enum.EasingStyle.Quad, Enum.EasingDirection.Out, 0, false, 0);
+        tweenInfo = new TweenInfo(0.47, Enum.EasingStyle.Quad, Enum.EasingDirection.Out, 0, false, 0);
         const humanoidRootPart: Part | undefined = player.Character.FindFirstChild("HumanoidRootPart") as Part;
         let humanoidTargetProperties = {
             CFrame: this.instance.Markers.Entrance.CFrame.mul(CFrame.Angles(0, math.rad(180), 0))
         }
         const playerTween = TweenService.Create(humanoidRootPart, tweenInfo, humanoidTargetProperties);
         playerTween.Play();
+
+        playerTween.Completed.Connect(() => {
+            if(player.Character) {
+                player.Character.SetAttribute("InWardrobe", false);
+                this.collisionGroupService.setCollisionGroup(player.Character, "Character");
+
+                const humanoid: Humanoid | undefined = player.Character.FindFirstChild("Humanoid") as Humanoid;
+                if(humanoid) {
+                    humanoid.WalkSpeed = 95;
+                }
+            }
+            this.state = WardrobeState.OPEN;
+            this.playerInside = undefined;
+        });
 
         // Close wardrobe
         tween.Completed.Connect(() => {
@@ -199,14 +226,6 @@ export class Wardrobe extends BaseComponent <{}, IWardrobeComponent> implements 
             }
             tween = TweenService.Create(rightDoor.PrimaryPart, tweenInfo, targetProperties);
             tween.Play();
-
-            tween.Completed.Connect(() => {
-                if(player.Character) {
-                    this.state = WardrobeState.OPEN;
-                    this.playerInside = undefined;
-                    player.Character.SetAttribute("InWardrobe", false);
-                }
-            });
         });
     }
 

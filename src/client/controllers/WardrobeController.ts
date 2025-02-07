@@ -1,13 +1,14 @@
-import { Controller, OnStart } from "@flamework/core";
+import { Controller } from "@flamework/core";
 import { Players, RunService } from "@rbxts/services";
 import { Events } from "client/network";
+import { AnimationController } from "./AnimationController";
+import { SharedSettings } from "shared/SharedSettings";
 
 @Controller()
-export class MovementController {
+export class WardrobeController {
 	private player = Players.LocalPlayer;
 
-    constructor() {
-		print("A");
+    constructor(private animationController: AnimationController) {
 		if(this.player.Character) {
 			this.onCharacterAdded(this.player.Character);
 		}
@@ -18,15 +19,14 @@ export class MovementController {
 	}
 
 	private onCharacterAdded(character: Model): void {
-		print("B");
 		const humanoid: Humanoid = character.WaitForChild("Humanoid") as Humanoid;
 		if(humanoid) {
 			RunService.Heartbeat.Connect(() => {
 				if(humanoid.MoveDirection.Magnitude > 0) {
 					if(character.GetAttribute("InWardrobe") === true) {
-						print("In Wardrobe");
 						character.SetAttribute("InWardrobe", false)	;
 						Events.leaveWardrobe.fire();
+						this.animationController.play(SharedSettings.ANIMATIONS.WARDROBE.EXIT);
 					}
 				}
 			});
