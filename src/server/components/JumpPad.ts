@@ -1,6 +1,5 @@
 import { Component, BaseComponent } from "@flamework/components";
 import { OnStart } from "@flamework/core";
-import { MyService } from "server/services/MyService";
 
 /*interface IJumpPadComponent extends Model {
 	TopPart: Part;
