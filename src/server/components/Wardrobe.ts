@@ -1,7 +1,7 @@
 import { Component, BaseComponent } from "@flamework/components";
 import { OnStart } from "@flamework/core";
 import { Logger } from "@rbxts/log/out/Logger";
-import { Players, TweenService } from "@rbxts/services"
+import { TweenService } from "@rbxts/services"
 import { Events } from "server/network";
 import { AudioService } from "server/services/AudioService";
 import { CollisionGroupService } from "server/services/CollisionGroupService";
@@ -71,7 +71,7 @@ export class Wardrobe extends BaseComponent <{}, IWardrobeComponent> implements 
         this.openPromt.Parent = this.instance.Primary.Toggle;
 
         this.openPromtConnection = this.openPromt.Triggered.Connect((player) => {
-            this.open(player);
+            this.enterPlayer(player);
         });
     }
 
@@ -80,7 +80,7 @@ export class Wardrobe extends BaseComponent <{}, IWardrobeComponent> implements 
         this.openPromtConnection?.Disconnect();
     }
 
-    private open(player: Player): void {
+    private enterPlayer(player: Player): void {
         //Check validty of action
         if(this.state === WardrobeState.BLOCKED) { return; }
         if(!player.Character) { return; }
@@ -88,8 +88,6 @@ export class Wardrobe extends BaseComponent <{}, IWardrobeComponent> implements 
 
         this.state = WardrobeState.BLOCKED;
         this.destroyProximityPromt();
-        player.Character.SetAttribute("InWardrobe", true);
-        this.playerInside = player;
         this.collisionGroupService.setCollisionGroup(player.Character, "Wardrobe");
         this.characterLeaveWardrobeConnection = player.CharacterRemoving.Connect(() => {
             if(player === this.playerInside) {
@@ -113,17 +111,25 @@ export class Wardrobe extends BaseComponent <{}, IWardrobeComponent> implements 
         this.audioService.playSound(openSound);
 
         //Move Player
-        const playerMovedToEntrance: RBXScriptSignal | undefined = this.movePlayerToEntrance(player.Character);
+        const playerMovedToEntrance: RBXScriptSignal | undefined = this.moveCharacterToMarkerCFrame(player.Character, this.instance.Markers.Entrance.CFrame, 0.18);
         if(playerMovedToEntrance === undefined) { this.closeWardrobe(); return; }
         playerMovedToEntrance.Connect(() => {
             if(!player.Character) { this.closeWardrobe(); return; }
 
-            const playerMovedToSpot: RBXScriptSignal | undefined = this.movePlayerToSpot(player.Character);
+            const playerMovedToSpot: RBXScriptSignal | undefined = this.moveCharacterToMarkerCFrame(player.Character, this.instance.Markers.Spot.CFrame, 0.5);
             if(playerMovedToSpot === undefined) { this.closeWardrobe(); return; }
 
             // Close wardrobe
             playerMovedToSpot.Connect(() => {
-                this.closeWardrobe();
+                let closeDoorSignal: RBXScriptSignal | undefined = this.closeWardrobe();
+                if(closeDoorSignal) {
+                    closeDoorSignal.Connect(() => {
+                        if(player.Character) {
+                            player.Character.SetAttribute("InWardrobe", true);
+                            this.playerInside = player;
+                        }
+                    });
+                }
                 
                 if(player.Character) {
                     this.collisionGroupService.setCollisionGroup(player.Character, "Character");
@@ -150,26 +156,22 @@ export class Wardrobe extends BaseComponent <{}, IWardrobeComponent> implements 
         this.audioService.playSound(openSound);
 
         //Move Player
-        const playerMovedToSpot: RBXScriptSignal | undefined = this.movePlayerToSpot(player.Character);
-        if(playerMovedToSpot === undefined) { this.closeWardrobe(); return; }
-        playerMovedToSpot.Connect(() => {
-            if(!player.Character) { this.closeWardrobe(); return; }
+        const playerMovedToEntrance: RBXScriptSignal | undefined = this.moveCharacterToMarkerCFrame(player.Character,
+            this.instance.Markers.Entrance.CFrame.mul(CFrame.Angles(0, math.rad(180), 0)),
+             0.46);
+        if(playerMovedToEntrance === undefined) { this.closeWardrobe(); return; }
 
-            const playerMovedToEntrance: RBXScriptSignal | undefined = this.movePlayerToExit(player.Character);
-            if(playerMovedToEntrance === undefined) { this.closeWardrobe(); return; }
-
-            // Close wardrobe
-            playerMovedToEntrance.Connect(() => {
-                this.closeWardrobe();
-                
-                if(player.Character) {
-                    this.collisionGroupService.setCollisionGroup(player.Character, "Character");
-                    const humanoid: Humanoid | undefined = player.Character.FindFirstChild("Humanoid") as Humanoid;
-                    if(humanoid) {
-                        humanoid.WalkSpeed = 96;
-                    }
+        // Close wardrobe
+        playerMovedToEntrance.Connect(() => {
+            this.closeWardrobe();
+            
+            if(player.Character) {
+                this.collisionGroupService.setCollisionGroup(player.Character, "Character");
+                const humanoid: Humanoid | undefined = player.Character.FindFirstChild("Humanoid") as Humanoid;
+                if(humanoid) {
+                    humanoid.WalkSpeed = 96;
                 }
-            });
+            }
         });
 
         this.state = WardrobeState.OPEN;
@@ -179,88 +181,46 @@ export class Wardrobe extends BaseComponent <{}, IWardrobeComponent> implements 
     }
 
     private openWardrobe(): void {
-        this.openLeftDoor();
-        this.openRightDoor();
-    }
-
-    private closeWardrobe(): void {
-        this.closeLeftDoor();
-        this.closeRightDoor();
-    }
-
-    private openLeftDoor(): void {
-        let leftDoor: Model = this.instance.Build.Doors.Left;
-        if(!leftDoor.PrimaryPart) { return; }
-        let tweenInfo = new TweenInfo(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.Out, 0, false, 0);
-        let targetProperties = {
-            CFrame: this.leftDoorDefaultPosition?.mul(new CFrame(2.5, 0, 0))
+        if(this.leftDoorDefaultPosition) {
+            this.tweenDoor(this.instance.Build.Doors.Left, this.leftDoorDefaultPosition.mul(new CFrame(2.5, 0, 0)), 0.5);
         }
-        let tween = TweenService.Create(leftDoor.PrimaryPart, tweenInfo, targetProperties);
-        tween.Play();        
+
+        if(this.rightDoorDefaultPosition) {
+            this.tweenDoor(this.instance.Build.Doors.Right, this.rightDoorDefaultPosition.mul(new CFrame(-2.5, 0, 0)), 0.5);
+        }
     }
 
-    private openRightDoor(): void {
-        let rightDoor: Model = this.instance.Build.Doors.Right;
-        if(!rightDoor.PrimaryPart) { return; }
-        let tweenInfo = new TweenInfo(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.Out, 0, false, 0);
-        let targetProperties = {
-            CFrame: this.rightDoorDefaultPosition?.mul(new CFrame(-2.5, 0, 0))
+    private closeWardrobe(): RBXScriptSignal | undefined {
+        let leftDoorSignal: RBXScriptSignal | undefined;
+        let rightDoorSignal: RBXScriptSignal | undefined;
+
+        if(this.leftDoorDefaultPosition) {
+            leftDoorSignal = this.tweenDoor(this.instance.Build.Doors.Left, this.leftDoorDefaultPosition, 0.5);
         }
-        let tween = TweenService.Create(rightDoor.PrimaryPart, tweenInfo, targetProperties);
-        tween.Play();
+
+        if(this.rightDoorDefaultPosition) {
+            rightDoorSignal = this.tweenDoor(this.instance.Build.Doors.Right, this.rightDoorDefaultPosition, 0.5);
+        }
+
+        return leftDoorSignal ?? rightDoorSignal;
     }
 
-    private closeLeftDoor(): RBXScriptSignal | undefined {
-        let leftDoor: Model = this.instance.Build.Doors.Left;
-        if(!leftDoor.PrimaryPart) { return; }
-        let tweenInfo = new TweenInfo(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.Out, 0, false, 0);
+    private tweenDoor(door: Model, goal: CFrame, duration: number): RBXScriptSignal | undefined {
+        if(!door.PrimaryPart) { return; }
+        let tweenInfo = new TweenInfo(duration, Enum.EasingStyle.Quad, Enum.EasingDirection.Out, 0, false, 0);
         let targetProperties = {
-            CFrame: this.leftDoorDefaultPosition
+            CFrame: goal
         }
-        let tween = TweenService.Create(leftDoor.PrimaryPart, tweenInfo, targetProperties);
-        tween.Play();
-        return tween.Completed;  
-    }
-
-    private closeRightDoor(): RBXScriptSignal | undefined {
-        let rightDoor: Model = this.instance.Build.Doors.Right;
-        if(!rightDoor.PrimaryPart) { return; }
-        let tweenInfo = new TweenInfo(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.Out, 0, false, 0);
-        let targetProperties = {
-            CFrame: this.rightDoorDefaultPosition
-        }
-        let tween = TweenService.Create(rightDoor.PrimaryPart, tweenInfo, targetProperties);
+        let tween = TweenService.Create(door.PrimaryPart, tweenInfo, targetProperties);
         tween.Play();
         return tween.Completed;
     }
 
-    private movePlayerToEntrance(character: Model): RBXScriptSignal {
-        let tweenInfo = new TweenInfo(0.18, Enum.EasingStyle.Quad, Enum.EasingDirection.Out, 0, false, 0);
+    private moveCharacterToMarkerCFrame(character: Model, markerCFrame: CFrame, duration: number): RBXScriptSignal | undefined {
+        let tweenInfo = new TweenInfo(duration, Enum.EasingStyle.Quad, Enum.EasingDirection.Out, 0, false, 0);
         const humanoidRootPart: Part | undefined = character.FindFirstChild("HumanoidRootPart") as Part;
         let humanoidTargetProperties = {
-            CFrame: this.instance.Markers.Entrance.CFrame
-        }
-        let tween = TweenService.Create(humanoidRootPart, tweenInfo, humanoidTargetProperties);
-        tween.Play();
-        return tween.Completed;
-    }
-
-    private movePlayerToExit(character: Model): RBXScriptSignal {
-        let tweenInfo = new TweenInfo(0.18, Enum.EasingStyle.Quad, Enum.EasingDirection.Out, 0, false, 0);
-        const humanoidRootPart: Part | undefined = character.FindFirstChild("HumanoidRootPart") as Part;
-        let humanoidTargetProperties = {
-            CFrame: this.instance.Markers.Entrance.CFrame.mul(CFrame.Angles(0, math.rad(180), 0))
-        }
-        let tween = TweenService.Create(humanoidRootPart, tweenInfo, humanoidTargetProperties);
-        tween.Play();
-        return tween.Completed;
-    }
-
-    private movePlayerToSpot(character: Model): RBXScriptSignal | undefined {
-        let tweenInfo = new TweenInfo(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.Out, 0, false, 0);
-        const humanoidRootPart: Part | undefined = character.FindFirstChild("HumanoidRootPart") as Part;
-        let humanoidTargetProperties = {
-            CFrame: this.instance.Markers.Spot.CFrame
+            CFrame: markerCFrame
         }
         let tween = TweenService.Create(humanoidRootPart, tweenInfo, humanoidTargetProperties);
         tween.Play();

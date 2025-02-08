@@ -24,7 +24,7 @@ export class WardrobeController {
 			RunService.Heartbeat.Connect(() => {
 				if(humanoid.MoveDirection.Magnitude > 0) {
 					if(character.GetAttribute("InWardrobe") === true) {
-						character.SetAttribute("InWardrobe", false)	;
+						character.SetAttribute("InWardrobe", false);
 						Events.leaveWardrobe.fire();
 						this.animationController.play(SharedSettings.ANIMATIONS.WARDROBE.EXIT);
 					}
