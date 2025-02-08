@@ -2,6 +2,7 @@ import { Networking } from "@flamework/networking";
 
 interface ClientToServerEvents {
     leaveWardrobe(): void;
+    leaveBed(): void;
 }
 
 interface ServerToClientEvents {

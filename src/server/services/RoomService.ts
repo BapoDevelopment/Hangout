@@ -2,6 +2,7 @@ import { Components } from "@flamework/components/out/components";
 import { Dependency, Service } from "@flamework/core";
 import { Logger } from "@rbxts/log/out/Logger";
 import { CollectionService, ServerStorage } from "@rbxts/services";
+import { Bed } from "server/components/Bed";
 import { Drawer } from "server/components/Drawer";
 import { RegularDoor } from "server/components/RegularDoor";
 import { Room } from "server/components/Room/Room";
@@ -45,6 +46,9 @@ export class RoomService {
                     case "WardrobePlaceholder":
                         forniture = ServerStorage.Furniture.Wardrobe.Clone();
                         break;
+                    case "BedPlaceholder":
+                        forniture = ServerStorage.Furniture.Bed.Clone();
+                        break;
                     default:
                         break;
                 }
@@ -65,6 +69,11 @@ export class RoomService {
                     case "WardrobePlaceholder":
                         components.waitForComponent<Wardrobe>(forniture).then((value) => {
                             room.addWardrobe(value);
+                        });
+                        break;
+                    case "BedPlaceholder":
+                        components.waitForComponent<Bed>(forniture).then((value) => {
+                            room.addBed(value);
                         });
                         break;
                     default:

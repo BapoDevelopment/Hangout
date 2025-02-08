@@ -4,5 +4,9 @@ export const SharedSettings = {
             ENTER: "rbxassetid://111855990995362",
             EXIT: "rbxassetid://111855990995362",
         },
+        BED: {
+            ENTER: "rbxassetid://111855990995362",
+            EXIT: "rbxassetid://111855990995362",
+        },
     },
 };

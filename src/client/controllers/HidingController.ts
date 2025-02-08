@@ -5,7 +5,7 @@ import { AnimationController } from "./AnimationController";
 import { SharedSettings } from "shared/SharedSettings";
 
 @Controller()
-export class WardrobeController {
+export class HidingController {
 	private player = Players.LocalPlayer;
 
     constructor(private animationController: AnimationController) {
@@ -27,6 +27,11 @@ export class WardrobeController {
 						character.SetAttribute("InWardrobe", false);
 						Events.leaveWardrobe.fire();
 						this.animationController.play(SharedSettings.ANIMATIONS.WARDROBE.EXIT);
+					}
+					if(character.GetAttribute("UnderBed") === true) {
+						character.SetAttribute("UnderBed", false);
+						Events.leaveBed.fire();
+						this.animationController.play(SharedSettings.ANIMATIONS.BED.EXIT);
 					}
 				}
 			});

@@ -6,13 +6,9 @@ import { Events } from "server/network";
 import { AudioService } from "server/services/AudioService";
 import { CollisionGroupService } from "server/services/CollisionGroupService";
 import { SharedSettings } from "shared/SharedSettings";
+import { HidingSpot, HidingSpotState, IHidingSpotComponent } from "./HidingSpot";
 
-enum WardrobeState {
-    OPEN = "true",
-    BLOCKED = "false"
-}
-
-interface IWardrobeComponent extends Instance {
+interface IWardrobeComponent extends IHidingSpotComponent {
     open: Sound;
     Primary: Part & {
         Toggle: Attachment;
@@ -37,18 +33,12 @@ interface IWardrobeComponent extends Instance {
 @Component({
     tag: "Wardrobe",
 })
-export class Wardrobe extends BaseComponent <{}, IWardrobeComponent> implements OnStart {
+export class Wardrobe extends HidingSpot <{}, IWardrobeComponent> implements OnStart {
 
-    private state: WardrobeState = WardrobeState.OPEN;
-    private playerInside: Player | undefined;
-    private leaveWardrobeConnection: RBXScriptConnection | undefined;
-    private characterLeaveWardrobeConnection: RBXScriptConnection | undefined;
-    private openPromt: ProximityPrompt | undefined;
-    private openPromtConnection: RBXScriptConnection | undefined;
     private leftDoorDefaultPosition: CFrame | undefined;
     private rightDoorDefaultPosition: CFrame | undefined;
 
-    constructor(private audioService: AudioService, private collisionGroupService: CollisionGroupService, private readonly logger: Logger) {
+    constructor(private audioService: AudioService, private collisionGroupService: CollisionGroupService, protected readonly logger: Logger) {
         super();
     }
 
@@ -56,44 +46,28 @@ export class Wardrobe extends BaseComponent <{}, IWardrobeComponent> implements 
         this.leftDoorDefaultPosition = this.instance.Build.Doors.Left.Leaf.CFrame;
         this.rightDoorDefaultPosition = this.instance.Build.Doors.Right.Leaf.CFrame;
 
-        this.leaveWardrobeConnection = Events.leaveWardrobe.connect((player) => {
+        this.leaveHidingSpotConnection = Events.leaveWardrobe.connect((player) => {
             if(this.playerInside === player) {
                 this.exitPlayer(player);
             }
         });
-        this.createProximityPromt();
+        this.createProximityPromt(this.instance.Primary.Toggle);
     }
 
-    private createProximityPromt(): void {
-        this.openPromt = new Instance("ProximityPrompt");
-        this.openPromt.ActionText = "Enter";
-        this.openPromt.MaxActivationDistance = 5;
-        this.openPromt.Parent = this.instance.Primary.Toggle;
-
-        this.openPromtConnection = this.openPromt.Triggered.Connect((player) => {
-            this.enterPlayer(player);
-        });
-    }
-
-    private destroyProximityPromt(): void {
-        this.openPromt?.Destroy();
-        this.openPromtConnection?.Disconnect();
-    }
-
-    private enterPlayer(player: Player): void {
+    protected enterPlayer(player: Player): void {
         //Check validty of action
-        if(this.state === WardrobeState.BLOCKED) { return; }
+        if(this.state === HidingSpotState.BLOCKED) { return; }
         if(!player.Character) { return; }
         if(!player.Character.FindFirstChild("HumanoidRootPart")) { return; }
 
-        this.state = WardrobeState.BLOCKED;
+        this.state = HidingSpotState.BLOCKED;
         this.destroyProximityPromt();
         this.collisionGroupService.setCollisionGroup(player.Character, "Wardrobe");
-        this.characterLeaveWardrobeConnection = player.CharacterRemoving.Connect(() => {
+        this.characterLeaveHidingConnection = player.CharacterRemoving.Connect(() => {
             if(player === this.playerInside) {
-                this.state = WardrobeState.OPEN;
+                this.state = HidingSpotState.OPEN;
                 this.playerInside = undefined;
-                this.createProximityPromt();
+                this.createProximityPromt(this.instance.Primary.Toggle);
                 this.closeWardrobe();
             }
         });
@@ -138,16 +112,16 @@ export class Wardrobe extends BaseComponent <{}, IWardrobeComponent> implements 
         });
     }
 
-    private exitPlayer(player: Player): void {
+    protected exitPlayer(player: Player): void {
         //Check validty of action
-        if(this.state === WardrobeState.OPEN) { return; }
+        if(this.state === HidingSpotState.OPEN) { return; }
         if(!player.Character) { return; }
         if(!player.Character.FindFirstChild("HumanoidRootPart")) { return; }
 
-        this.characterLeaveWardrobeConnection?.Disconnect();
+        this.characterLeaveHidingConnection?.Disconnect();
 
         this.collisionGroupService.setCollisionGroup(player.Character, "Wardrobe");
-        Events.playAnimationID(player, SharedSettings.ANIMATIONS.WARDROBE.ENTER);
+        Events.playAnimationID(player, SharedSettings.ANIMATIONS.WARDROBE.EXIT);
 
         this.openWardrobe();
 
@@ -174,10 +148,10 @@ export class Wardrobe extends BaseComponent <{}, IWardrobeComponent> implements 
             }
         });
 
-        this.state = WardrobeState.OPEN;
+        this.state = HidingSpotState.OPEN;
         player.Character.SetAttribute("InWardrobe", false);
         this.playerInside = undefined;
-        this.createProximityPromt();
+        this.createProximityPromt(this.instance.Primary.Toggle);
     }
 
     private openWardrobe(): void {
@@ -216,21 +190,9 @@ export class Wardrobe extends BaseComponent <{}, IWardrobeComponent> implements 
         return tween.Completed;
     }
 
-    private moveCharacterToMarkerCFrame(character: Model, markerCFrame: CFrame, duration: number): RBXScriptSignal | undefined {
-        let tweenInfo = new TweenInfo(duration, Enum.EasingStyle.Quad, Enum.EasingDirection.Out, 0, false, 0);
-        const humanoidRootPart: Part | undefined = character.FindFirstChild("HumanoidRootPart") as Part;
-        let humanoidTargetProperties = {
-            CFrame: markerCFrame
-        }
-        let tween = TweenService.Create(humanoidRootPart, tweenInfo, humanoidTargetProperties);
-        tween.Play();
-        return tween.Completed;
-    }
-
     public destroy(): void {
         super.destroy();
-        this.instance.Destroy();
-        this.leaveWardrobeConnection?.Disconnect();
-        this.characterLeaveWardrobeConnection?.Disconnect();
+        this.leaveHidingSpotConnection?.Disconnect();
+        this.characterLeaveHidingConnection?.Disconnect();
     }
 }
