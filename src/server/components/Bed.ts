@@ -83,12 +83,13 @@ export class Bed extends HidingSpot <{}, IBedComponent> implements OnStart {
         }
         this.exit = nearestEntrance;
         const playerMovedToEntrance: RBXScriptSignal | undefined = this.moveCharacterToMarkerCFrame(player.Character,
-            nearestEntrance.CFrame.mul(CFrame.Angles(0, math.rad(180), 0)),
+            nearestEntrance.CFrame,
              0.46);
         if(playerMovedToEntrance === undefined) { return; }
         playerMovedToEntrance.Connect(() => {
             if(!player.Character) { return; }
 
+            humanoid.ChangeState(Enum.HumanoidStateType.Physics);
             const moveToCFrame: CFrame = this.instance.Markers.Spot.CFrame.mul(CFrame.fromEulerAngles(math.rad(90), 0, 0));
             const playerMovedToSpot: RBXScriptSignal | undefined = this.moveCharacterToMarkerCFrame(player.Character, moveToCFrame, 0.5);
             if(playerMovedToSpot === undefined) { return; }
@@ -98,7 +99,8 @@ export class Bed extends HidingSpot <{}, IBedComponent> implements OnStart {
                 if(player.Character) {
                     const humanoidRootPart: Part | undefined = player.Character.FindFirstChild("HumanoidRootPart") as Part;
                     if(humanoidRootPart) {
-                        humanoidRootPart.Anchored = true;
+                        //humanoidRootPart.Anchored = true;
+                        
                     }
                     player.Character.SetAttribute("UnderBed", true);
                     this.playerInside = player;
@@ -108,6 +110,23 @@ export class Bed extends HidingSpot <{}, IBedComponent> implements OnStart {
         });
     }
 
+    private applyBodyGyro(character: Model): void {
+        const hrp = character.FindFirstChild("HumanoidRootPart") as BasePart | undefined;
+        this.logger.Info("A");
+        if (hrp) {
+            const gyro = new Instance("BodyGyro");
+            gyro.MaxTorque = new Vector3(1e5, 1e5, 1e5);
+            gyro.P = 3000;
+            gyro.CFrame = hrp.CFrame.mul(CFrame.Angles(0, math.rad(180), 0));
+            gyro.Parent = hrp;
+            delay(0.5, () => {
+                gyro.Destroy();
+            });
+            this.logger.Info("B");
+        }
+    }
+
+    
     protected exitPlayer(player: Player): void {
         //Check validty of action
         if(this.state === HidingSpotState.OPEN) { return; }
@@ -129,8 +148,10 @@ export class Bed extends HidingSpot <{}, IBedComponent> implements OnStart {
         //Move Player
         let exitTo: BasePart | undefined = this.exit;
         if(!exitTo) { exitTo = this.instance.Markers.Entrance.Front; }
+        humanoidRootPart.Anchored = false;
+        this.applyBodyGyro(player.Character);
         const playerMovedToEntrance: RBXScriptSignal | undefined = this.moveCharacterToMarkerCFrame(player.Character,
-            exitTo.CFrame.mul(CFrame.fromEulerAngles(0, math.rad(90), 0)),
+            exitTo.CFrame,
              0.46);
         if(playerMovedToEntrance === undefined) { return; }
 
@@ -140,7 +161,8 @@ export class Bed extends HidingSpot <{}, IBedComponent> implements OnStart {
                 this.collisionGroupService.setCollisionGroup(player.Character, "Character");
                 const humanoid: Humanoid | undefined = player.Character.FindFirstChild("Humanoid") as Humanoid;
                 if(humanoidRootPart) {
-                    humanoidRootPart.Anchored = false;
+                    humanoid.ChangeState(Enum.HumanoidStateType.Landed);
+                    //humanoidRootPart.Anchored = false;
                 }
                 if(humanoid) {
                     humanoid.WalkSpeed = 96;
@@ -163,7 +185,6 @@ export class Bed extends HidingSpot <{}, IBedComponent> implements OnStart {
         let smallestDistance = math.huge;
 
         parts.GetChildren().forEach(child => {
-            this.logger.Info("entrance: " + tostring(child));
             let entrancePart: Part = child as Part;
             if(!entrancePart) { return; }
             const distance: number = (humanoidRootPart.Position.sub(entrancePart.Position)).Magnitude;
