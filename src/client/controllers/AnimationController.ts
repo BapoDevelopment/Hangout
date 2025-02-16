@@ -1,17 +1,12 @@
 import { Controller, OnStart } from "@flamework/core";
 import { Players } from "@rbxts/services"
 import { Events } from "client/network";
+import { SharedSettings } from "shared/SharedSettings";
 
 @Controller()
 export class AnimationController implements OnStart {
 
-    private playAnimationIDConnection: RBXScriptConnection | undefined;
-
-    onStart(): void {
-        this.playAnimationIDConnection = Events.playAnimationID.connect((animationID) => {
-            this.play(animationID);
-        });
-    }
+    onStart(): void {}
 
     public play(animationID: string): void {
         const player = Players.LocalPlayer;

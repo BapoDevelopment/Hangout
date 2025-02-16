@@ -6,7 +6,7 @@ interface ClientToServerEvents {
 }
 
 interface ServerToClientEvents {
-    playAnimationID(animationID: string): void;
+    layDown(): void;
 }
 
 interface ClientToServerFunctions {}

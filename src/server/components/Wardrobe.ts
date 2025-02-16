@@ -76,7 +76,7 @@ export class Wardrobe extends HidingSpot <{}, IWardrobeComponent> implements OnS
         if(humanoid) {
             humanoid.WalkSpeed = 0;
         }
-        Events.playAnimationID(player, SharedSettings.ANIMATIONS.WARDROBE.ENTER);
+        Events.layDown(player);
 
         this.openWardrobe();
 
@@ -121,7 +121,7 @@ export class Wardrobe extends HidingSpot <{}, IWardrobeComponent> implements OnS
         this.characterLeaveHidingConnection?.Disconnect();
 
         this.collisionGroupService.setCollisionGroup(player.Character, "Wardrobe");
-        Events.playAnimationID(player, SharedSettings.ANIMATIONS.WARDROBE.EXIT);
+        Events.layDown(player);
 
         this.openWardrobe();
 

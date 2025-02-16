@@ -1,12 +1,13 @@
-import { Controller } from "@flamework/core";
+import { Controller, OnStart } from "@flamework/core";
 import { Players, RunService } from "@rbxts/services";
 import { Events } from "client/network";
 import { AnimationController } from "./AnimationController";
 import { SharedSettings } from "shared/SharedSettings";
 
 @Controller()
-export class HidingController {
+export class HidingController implements OnStart {
 	private player = Players.LocalPlayer;
+	private layDownConnection: RBXScriptConnection | undefined;
 
     constructor(private animationController: AnimationController) {
 		if(this.player.Character) {
@@ -17,6 +18,8 @@ export class HidingController {
 			this.onCharacterAdded(character);
 		});
 	}
+	onStart(): void {
+	}
 
 	private onCharacterAdded(character: Model): void {
 		const humanoid: Humanoid = character.WaitForChild("Humanoid") as Humanoid;
@@ -24,14 +27,16 @@ export class HidingController {
 			RunService.Heartbeat.Connect(() => {
 				if(humanoid.MoveDirection.Magnitude > 0) {
 					if(character.GetAttribute("InWardrobe") === true) {
+						print("IM SChrank");
 						character.SetAttribute("InWardrobe", false);
 						Events.leaveWardrobe.fire();
 						this.animationController.play(SharedSettings.ANIMATIONS.WARDROBE.EXIT);
 					}
 					if(character.GetAttribute("UnderBed") === true) {
+						print("Unterm Bett");
 						character.SetAttribute("UnderBed", false);
+						//this.animationController.play(SharedSettings.ANIMATIONS.BED.EXIT);
 						Events.leaveBed.fire();
-						this.animationController.play(SharedSettings.ANIMATIONS.BED.EXIT);
 					}
 				}
 			});
