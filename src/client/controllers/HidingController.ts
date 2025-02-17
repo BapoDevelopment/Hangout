@@ -7,7 +7,6 @@ import { SharedSettings } from "shared/SharedSettings";
 @Controller()
 export class HidingController implements OnStart {
 	private player = Players.LocalPlayer;
-	private layDownConnection: RBXScriptConnection | undefined;
 
     constructor(private animationController: AnimationController) {
 		if(this.player.Character) {
@@ -27,15 +26,12 @@ export class HidingController implements OnStart {
 			RunService.Heartbeat.Connect(() => {
 				if(humanoid.MoveDirection.Magnitude > 0) {
 					if(character.GetAttribute("InWardrobe") === true) {
-						print("IM SChrank");
 						character.SetAttribute("InWardrobe", false);
 						Events.leaveWardrobe.fire();
 						this.animationController.play(SharedSettings.ANIMATIONS.WARDROBE.EXIT);
 					}
 					if(character.GetAttribute("UnderBed") === true) {
-						print("Unterm Bett");
 						character.SetAttribute("UnderBed", false);
-						//this.animationController.play(SharedSettings.ANIMATIONS.BED.EXIT);
 						Events.leaveBed.fire();
 					}
 				}

@@ -1,7 +1,6 @@
 import { Component } from "@flamework/components";
 import { OnStart } from "@flamework/core";
 import { Logger } from "@rbxts/log/out/Logger";
-import { Players, TweenService } from "@rbxts/services"
 import { Events } from "server/network";
 import { AudioService } from "server/services/AudioService";
 import { CollisionGroupService } from "server/services/CollisionGroupService";
@@ -36,6 +35,7 @@ export class Bed extends HidingSpot <{}, IBedComponent> implements OnStart {
 
     private exit: BasePart | undefined;
     private enteredBedConnection: RBXScriptConnection | undefined;
+    private enteredSide: string = "FRONT";
 
     constructor(private audioService: AudioService, private collisionGroupService: CollisionGroupService, protected readonly logger: Logger) {
         super();
@@ -43,11 +43,8 @@ export class Bed extends HidingSpot <{}, IBedComponent> implements OnStart {
 
     onStart(): void {
         this.leaveHidingSpotConnection = Events.leaveBed.connect((player) => {
-            this.logger.Info("0");
             if(this.playerInside === player) {
-                this.logger.Info("1");
                 this.exitPlayer(player);
-                this.logger.Info("2");
             }
         });
         this.createProximityPromt(this.instance.Markers.Spot.ProximityPromtPosition);
@@ -87,7 +84,10 @@ export class Bed extends HidingSpot <{}, IBedComponent> implements OnStart {
         //Move Player
         let nearestEntrance: BasePart | undefined = this.getNearestEntrance(this.instance.Markers.Entrance, player.Character);
         if(!nearestEntrance) {
-            nearestEntrance = this.instance.Markers.Entrance.Front 
+            nearestEntrance = this.instance.Markers.Entrance.Front;
+            this.enteredSide = "FRONT";
+        } else {
+            this.enteredSide = nearestEntrance.Name;
         }
         this.exit = nearestEntrance;
         const playerMovedToEntrance: RBXScriptSignal | undefined = this.moveCharacterToMarkerCFrame(player.Character,
@@ -96,45 +96,14 @@ export class Bed extends HidingSpot <{}, IBedComponent> implements OnStart {
         if(playerMovedToEntrance === undefined) { return; }
         playerMovedToEntrance.Connect(() => {
             if(!player.Character) { return; }
-            humanoidRootPart.Anchored = true;
+            //humanoidRootPart.Anchored = true;
             player.Character.SetAttribute("UnderBed", true);
             this.playerInside = player;
-            this.layDown(player);
+            this.animate(player, "LAY_DOWN", nearestEntrance.Name);
         });
     }
-    
-    private layDown(player: Player): void {
-        if(!player) { return; }
-        if(!player.Character) { return; }
-        
-        const humanoid: Humanoid | undefined = player.Character.WaitForChild("Humanoid") as Humanoid;
-        if(!humanoid) { return; }
-
-        let animation: Animation = new Instance("Animation");
-        animation.AnimationId = SharedSettings.ANIMATIONS.BED.ENTER;
-        
-        const animator: Animator | undefined = humanoid.WaitForChild("Animator") as Animator;
-        if(!animator) { return; }
-
-        const animationTrack: AnimationTrack = animator.LoadAnimation(animation);
-
-        animationTrack.Play();
-
-        animationTrack.KeyframeReached.Connect((keyframeName) => {
-            if(keyframeName === "Pause") {
-                animationTrack.AdjustSpeed(0);
-            }
-        });
-
-        animationTrack.Stopped.Connect(() => {
-            humanoid.GetPlayingAnimationTracks().forEach(track => {
-                track.Stop();
-            });
-        });
-    }
-    
+       
     protected exitPlayer(player: Player): void {
-        this.logger.Info("A");
         //Check validty of action
         if(this.state === HidingSpotState.OPEN) { return; }
         if(!player.Character) { return; }
@@ -151,19 +120,16 @@ export class Bed extends HidingSpot <{}, IBedComponent> implements OnStart {
         const crouchSound: Sound = this.instance.FindFirstChild("open") as Sound;
         this.audioService.playSound(crouchSound);
 
-        this.getUp(player);
-        this.logger.Info("B");
+        this.animate(player, "GET_UP", this.enteredSide);
 
         humanoidRootPart.Anchored = false;
         this.state = HidingSpotState.OPEN;
         player.Character.SetAttribute("UnderBed", false);
         this.playerInside = undefined;
         this.createProximityPromt(this.instance.Markers.Spot.ProximityPromtPosition);
-        
-        this.logger.Info("C");
     }
 
-    public getUp(player: Player): void {
+    private animate(player: Player, action: string, side: string): void {
         if(!player) { return; }
         if(!player.Character) { return; }
         
@@ -171,7 +137,23 @@ export class Bed extends HidingSpot <{}, IBedComponent> implements OnStart {
         if(!humanoid) { return; }
 
         let animation: Animation = new Instance("Animation");
-        animation.AnimationId = SharedSettings.ANIMATIONS.BED.EXIT;
+        if(action === "LAY_DOWN") {
+            if(side === "Left") {
+                animation.AnimationId = SharedSettings.ANIMATIONS.BED.ENTER.LEFT;
+            } else if(side === "Right") {
+                animation.AnimationId = SharedSettings.ANIMATIONS.BED.ENTER.RIGHT;
+            } else {
+                animation.AnimationId = SharedSettings.ANIMATIONS.BED.ENTER.FRONT;
+            }
+        } else if(action === "GET_UP") {
+            if(side === "Left") {
+                animation.AnimationId = SharedSettings.ANIMATIONS.BED.EXIT.LEFT;
+            } else if(side === "Right") {
+                animation.AnimationId = SharedSettings.ANIMATIONS.BED.EXIT.RIGHT;
+            } else {
+                animation.AnimationId = SharedSettings.ANIMATIONS.BED.EXIT.FRONT;
+            }
+        }
         
         const animator: Animator | undefined = humanoid.WaitForChild("Animator") as Animator;
         if(!animator) { return; }
@@ -180,11 +162,19 @@ export class Bed extends HidingSpot <{}, IBedComponent> implements OnStart {
 
         animationTrack.Play();
 
+        animationTrack.KeyframeReached.Connect((keyframeName) => {
+            if(keyframeName === "Pause" && action === "LAY_DOWN") {
+                animationTrack.AdjustSpeed(0);
+            }
+        });
+
         animationTrack.Stopped.Connect(() => {
             humanoid.GetPlayingAnimationTracks().forEach(track => {
                 track.Stop();
             });
-            humanoid.WalkSpeed = 95;
+            if(action === "LAY_DOWN") {
+                humanoid.WalkSpeed = 16;
+            }
         });
     }
 
