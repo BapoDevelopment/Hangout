@@ -34,7 +34,6 @@ interface IBedComponent extends IHidingSpotComponent {
 export class Bed extends HidingSpot <{}, IBedComponent> implements OnStart {
 
     private exit: BasePart | undefined;
-    private enteredBedConnection: RBXScriptConnection | undefined;
     private enteredSide: string = "FRONT";
 
     constructor(private audioService: AudioService, private collisionGroupService: CollisionGroupService, protected readonly logger: Logger) {
@@ -114,13 +113,18 @@ export class Bed extends HidingSpot <{}, IBedComponent> implements OnStart {
 
         this.characterLeaveHidingConnection?.Disconnect();
 
-        this.collisionGroupService.setCollisionGroup(player.Character, "Bed");
-
         //Play open Sound
         const crouchSound: Sound = this.instance.FindFirstChild("open") as Sound;
         this.audioService.playSound(crouchSound);
 
-        this.animate(player, "GET_UP", this.enteredSide);
+        const rbxSignal: RBXScriptSignal | undefined = this.animate(player, "GET_UP", this.enteredSide);
+        if(rbxSignal) {
+            rbxSignal.Connect(() => {
+                if(player.Character) {
+                    this.collisionGroupService.setCollisionGroup(player.Character, "Character");
+                }
+            })
+        }
 
         humanoidRootPart.Anchored = false;
         this.state = HidingSpotState.OPEN;
@@ -129,7 +133,7 @@ export class Bed extends HidingSpot <{}, IBedComponent> implements OnStart {
         this.createProximityPromt(this.instance.Markers.Spot.ProximityPromtPosition);
     }
 
-    private animate(player: Player, action: string, side: string): void {
+    private animate(player: Player, action: string, side: string): RBXScriptSignal | undefined {
         if(!player) { return; }
         if(!player.Character) { return; }
         
@@ -176,6 +180,8 @@ export class Bed extends HidingSpot <{}, IBedComponent> implements OnStart {
                 humanoid.WalkSpeed = 16;
             }
         });
+
+        return animationTrack.Stopped;
     }
 
     private getNearestEntrance(parts: Model, character: Model): BasePart | undefined {
