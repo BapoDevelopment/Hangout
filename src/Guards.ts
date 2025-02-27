@@ -1,5 +1,9 @@
 export {};
 declare global {
+    interface Workspace extends Instance {
+        Rooms: Folder;
+    }
+    
     interface ServerStorage extends Instance {
         Doors: Folder & {
             Regular: Model;
