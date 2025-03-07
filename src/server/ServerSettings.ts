@@ -6,11 +6,16 @@ export const ServerSettings = {
         LAST_ROOM: 100,
     },
     ROOMS: {
-        DOOR_LOCKED_PROBABILITY: 10,
+        DOOR_LOCKED_PROBABILITY: 0,
     },
     ENTITIES: {
         VOID: {
             DMG: 50,
+        },
+        RUSH: {
+            MOVE_THROUGHT_N_ROOMS_FROM: 3,
+            SPAWN_N_ROOMS_BEFORE: 2,
+            SPEED: 500,
         },
     },
 };

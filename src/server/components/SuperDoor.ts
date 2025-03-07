@@ -51,10 +51,22 @@ export class SuperDoor<A extends IDoorAttributes, I extends IDoorComponent> exte
         this.instance.Build.Leaf.Sign.SurfaceGui.TextLabel.Text = prefix + tostring(this.attributes.Number);
     }
 
-    protected openDoor(player: Player) {
-        this.state = DoorState.OPEN;
+    public openByRush() {
+        this.openDoor();
+        if(this.logger) { this.logger.Debug("Rush opened Door " + tostring(this.attributes.Number)); }
+    }
 
+    protected openByPlayer(player: Player) {
+        this.openDoor();
         if(this.logger) { this.logger.Debug(tostring(player) + " opened Door " + tostring(this.attributes.Number)); }
+    }
+
+    private openDoor() {
+        if(this.state === DoorState.OPEN) {
+            this.logger?.Warn("Door already opened.");
+            return;
+        }
+        this.state = DoorState.OPEN;
 
         const tweenInfo = new TweenInfo(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.Out, 0, false, 0);
         const targetProperties = {
@@ -64,7 +76,7 @@ export class SuperDoor<A extends IDoorAttributes, I extends IDoorComponent> exte
         tween.Play();
         
         if(this.audioService) { this.audioService.playSound(this.instance.open); }
-        if(this.gameService) { this.gameService.onDoorOpened(); }
+        if(this.gameService) { this.gameService.onDoorOpened(this.attributes.Number); }
     }
 
     public destroy(): void {

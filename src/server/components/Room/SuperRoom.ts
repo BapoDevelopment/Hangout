@@ -17,6 +17,11 @@ export interface IRoomComponent extends Instance {
     };
     Zone: Model;
     Forniture: Folder;
+    Monster: Folder & {
+        Rush: Folder & {
+            Waypoints: Folder;
+        }
+    };
 }
 
 export interface IRoomAttributes {
@@ -67,6 +72,10 @@ export class SuperRoom<A extends IRoomAttributes, I extends IRoomComponent> exte
         this.beds.push(bed);
     }
 
+    public getDoor(): SuperDoor<IDoorAttributes, IDoorComponent> | undefined {
+        return this.doorsComponent;
+    }
+
     public setDoor(door: SuperDoor<IDoorAttributes, IDoorComponent>) {
         this.doorsComponent = door;
     }
@@ -88,5 +97,9 @@ export class SuperRoom<A extends IRoomAttributes, I extends IRoomComponent> exte
             drawer.destroy();
         });
         this.instance.Destroy();
+    }
+
+    public getRushWaypoints(): Folder {
+        return this.instance.Monster.Rush.Waypoints;
     }
 }

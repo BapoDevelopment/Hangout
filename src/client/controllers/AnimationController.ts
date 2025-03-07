@@ -1,7 +1,5 @@
 import { Controller, OnStart } from "@flamework/core";
 import { Players } from "@rbxts/services"
-import { Events } from "client/network";
-import { SharedSettings } from "shared/SharedSettings";
 
 @Controller()
 export class AnimationController implements OnStart {

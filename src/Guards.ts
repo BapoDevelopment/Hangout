@@ -3,7 +3,13 @@ declare global {
     interface Workspace extends Instance {
         Rooms: Folder;
     }
-    
+
+    interface ReplicatedStorage extends Instance {
+        Monsters: Folder & {
+            Rush: Model;
+        }
+    }
+
     interface ServerStorage extends Instance {
         Doors: Folder & {
             Regular: Model;

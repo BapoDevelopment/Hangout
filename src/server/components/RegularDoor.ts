@@ -41,7 +41,7 @@ export class RegularDoor extends SuperDoor<IDoorAttributes, IRegualarDoorCompone
     
     private handleSensor(player: Player) {
         if (this.state === DoorState.UNOPEN) {
-            super.openDoor(player);
+            super.openByPlayer(player);
         }
     }
 }

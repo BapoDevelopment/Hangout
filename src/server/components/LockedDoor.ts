@@ -61,7 +61,7 @@ export class LockedDoor extends SuperDoor<IDoorAttributes, ILockedDoorComponent>
                 promt.Destroy();
                 this.instance.Build.Leaf.Leaf.WeldConstraint.Destroy();
                 key.Destroy();
-                super.openDoor(player);
+                super.openByPlayer(player);
             }
         });
     }

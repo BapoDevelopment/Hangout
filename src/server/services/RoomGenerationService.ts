@@ -70,7 +70,8 @@ export class RoomGenerationService {
 		let previousRoom = this.activeRooms[this.activeRooms.size() - 1];
 		const room100: Model = ServerStorage.Rooms.Necessary.Room100.Clone();
 		room100.PivotTo(previousRoom.instance.Markers.Exit.CFrame);
-		room100.Parent = Workspace;		
+		room100.Parent = Workspace;
+		this.roomCunter += 1;
 	}
 
 	private getRandomRoomModel(): Model {
@@ -169,5 +170,17 @@ export class RoomGenerationService {
 		let PrimaryPart: BasePart = nextRoom.PrimaryPart as BasePart;
 		nextRoom.PivotTo(PrimaryPart.CFrame.mul(new CFrame(0, this.YDimensionShift, 0)));
 		this.YDimensionShift += 50;
+	}
+
+	public getRoom(number: number): SuperRoom<IRoomAttributes, IRoomComponent> | undefined {
+		const rooms: SuperRoom<IRoomAttributes, IRoomComponent>[] | undefined = this.activeRooms.filter((room) => {
+			if(room.attributes.Number === number) {
+				return true;
+			}
+		});
+		if(rooms) {
+			return rooms[0];
+		}
+		return undefined;
 	}
 }

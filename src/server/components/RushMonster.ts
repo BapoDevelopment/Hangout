@@ -1,0 +1,109 @@
+import { BaseComponent, Component } from "@flamework/components";
+import { OnStart } from "@flamework/core";
+import { Logger } from "@rbxts/log";
+import { SuperRoom, IRoomAttributes, IRoomComponent } from "./Room/SuperRoom";
+import { ServerSettings } from "server/ServerSettings";
+import { RunService } from "@rbxts/services";
+import { IDoorAttributes, IDoorComponent, SuperDoor } from "./SuperDoor";
+
+interface IRushComponent extends Model {
+    Primary: Part & {
+        Attachment0: Attachment;
+        LinearVelocity: LinearVelocity;
+        ParticleEmitter: ParticleEmitter;
+        BillboardGui: BillboardGui & {
+            ImageLabel: ImageLabel;
+        };
+    };
+}
+
+@Component({
+    tag: "Rush",
+})
+export class Rush extends BaseComponent<{}, IRushComponent> implements OnStart {
+
+    private rooms: SuperRoom<IRoomAttributes, IRoomComponent>[];
+    private roomCounter: number = 0;
+    private waypointCounter: number = 0;
+
+    constructor(private readonly logger: Logger) {
+        super();
+        this.rooms = new Array<SuperRoom<IRoomAttributes, IRoomComponent>>();
+    }
+
+    onStart(): void {}
+
+    public spawn(rooms: SuperRoom<IRoomAttributes, IRoomComponent>[]): void {
+        if(!rooms) { return; }
+        this.rooms = rooms;
+
+        let firstWaypoint = this.getWaypoint(this.rooms[0], 1);
+        if(!firstWaypoint) { return; }
+        this.instance.PivotTo(firstWaypoint.CFrame);
+        this.updateWaypointCounter();
+        
+        this.move();
+    }
+
+    private move(): void {
+        if(this.roomCounter > ServerSettings.ENTITIES.RUSH.SPAWN_N_ROOMS_BEFORE + ServerSettings.ENTITIES.RUSH.MOVE_THROUGHT_N_ROOMS_FROM) { return; }
+
+        const waypoint: BasePart | undefined = this.getWaypoint(this.rooms[this.roomCounter], this.waypointCounter);
+        if(!waypoint) { return; }
+        this.lerpTo(waypoint);
+    }
+
+    private getWaypoint(room: SuperRoom<IRoomAttributes, IRoomComponent>, number: number): BasePart | undefined {
+        const name = tostring(number);
+        if(!room) { return; }
+        const waypoints: Folder = room.getRushWaypoints();
+        if(!waypoints) { return; }
+        
+        let firstWaypoint: BasePart | undefined;
+        waypoints.GetChildren().forEach(waypoint => {
+            if(waypoint.Name === name) {
+                firstWaypoint = waypoint as BasePart;
+            }
+        });
+        return firstWaypoint;
+    }
+
+    private lerpTo(target: BasePart): RBXScriptConnection | undefined {
+        if(!this.instance.PrimaryPart || !target) { return; }
+        if(!this.instance.PrimaryPart) { return; }
+
+        let alpha: number = 0;
+        let distance: number = this.instance.PrimaryPart.Position.sub(target.Position).Magnitude;
+        let relativeSpeed = distance / ServerSettings.ENTITIES.RUSH.SPEED;
+        let startPos = this.instance.PrimaryPart.CFrame;
+
+        const connection: RBXScriptConnection = RunService.Heartbeat.Connect((delta) => {
+            if(!this.instance.PrimaryPart) { return; }
+            if(!target) { return; }
+
+            const goalCFrame = startPos.Lerp(target.CFrame, alpha);
+            this.instance.PrimaryPart.PivotTo(goalCFrame);
+            alpha += delta / relativeSpeed;
+
+            if(alpha >= 1) {
+                connection.Disconnect();
+                this.updateWaypointCounter();
+                this.move();
+            }
+        });
+
+        return connection;
+    }
+
+    private updateWaypointCounter(): void {
+        this.waypointCounter++;
+        if(this.waypointCounter > this.rooms[this.roomCounter].getRushWaypoints().GetChildren().size()) {
+            this.roomCounter++;
+            this.waypointCounter = 1;
+            const door: SuperDoor<IDoorAttributes, IDoorComponent> | undefined = this.rooms[this.roomCounter].getDoor();
+            if(door) {
+                door.openByRush();
+            }
+        }
+    }
+}
