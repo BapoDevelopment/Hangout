@@ -5,9 +5,13 @@ import { SuperRoom, IRoomAttributes, IRoomComponent } from "./Room/SuperRoom";
 import { ServerSettings } from "server/ServerSettings";
 import { CollectionService, RunService, Workspace } from "@rbxts/services";
 import { IDoorAttributes, IDoorComponent, SuperDoor } from "./SuperDoor";
+import { AudioService } from "server/services/AudioService";
 
 interface IRushComponent extends Model {
     Primary: Part & {
+        Spawn: Sound;
+        Despawn: Sound;
+        Move: Sound;
         Attachment0: Attachment;
         LinearVelocity: LinearVelocity;
         ParticleEmitter: ParticleEmitter;
@@ -25,8 +29,9 @@ export class Rush extends BaseComponent<{}, IRushComponent> implements OnStart {
     private rooms: SuperRoom<IRoomAttributes, IRoomComponent>[];
     private roomCounter: number = 0;
     private waypointCounter: number = 0;
+    private lerpConnection: RBXScriptConnection | undefined;
 
-    constructor(private readonly logger: Logger) {
+    constructor(private audioService: AudioService, private readonly logger: Logger) {
         super();
         this.rooms = new Array<SuperRoom<IRoomAttributes, IRoomComponent>>();
     }
@@ -42,7 +47,9 @@ export class Rush extends BaseComponent<{}, IRushComponent> implements OnStart {
         this.instance.PivotTo(firstWaypoint.CFrame);
         this.updateWaypointCounter();
         
+        this.audioService.playSound(this.instance.Primary.Spawn);
         this.move();
+        this.audioService.playSound(this.instance.Primary.Move);
     }
 
     private move(): void {
@@ -50,7 +57,7 @@ export class Rush extends BaseComponent<{}, IRushComponent> implements OnStart {
 
         const waypoint: BasePart | undefined = this.getWaypoint(this.rooms[this.roomCounter], this.waypointCounter);
         if(!waypoint) { return; }
-        this.lerpTo(waypoint);
+        this.lerpConnection = this.lerpTo(waypoint);
     }
 
     private getWaypoint(room: SuperRoom<IRoomAttributes, IRoomComponent>, number: number): BasePart | undefined {
@@ -141,7 +148,19 @@ export class Rush extends BaseComponent<{}, IRushComponent> implements OnStart {
                 if(door) {
                     door.openByRush();
                 }
+            } else {
+                this.audioService.playSoundWithCallback(this.instance.Primary.Despawn, () => {
+                    this.destroy();
+                });
             }
+        }
+    }
+
+    public destroy(): void {
+        super.destroy();
+        this.instance.Destroy();
+        if(this.lerpConnection) {
+            this.lerpConnection.Disconnect();
         }
     }
 }
