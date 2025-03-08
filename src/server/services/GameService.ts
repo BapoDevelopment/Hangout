@@ -31,7 +31,14 @@ export class GameService implements OnStart {
         this.roomGenerationService.checkAndDestroyOldRooms();
         this.roomGenerationService.blockLastDoor();
 
-        this.spawnRush(number);
+        this.spawnEntities(number);
+    }
+
+    private spawnEntities(roomNumber: number): void {
+        const rushSpawnRate: number = roomNumber < 50 ? ServerSettings.ENTITIES.RUSH.SPAWN_RATES_IN_PERCENT.BEFORE_ROOM_50 : ServerSettings.ENTITIES.RUSH.SPAWN_RATES_IN_PERCENT.AFTER_ROOM_50;
+        if(math.random() * 100 <= rushSpawnRate) {
+            this.spawnRush(roomNumber);
+        }
     }
 
     private spawnRush(roomNumber: number): void {

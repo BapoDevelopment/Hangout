@@ -3,7 +3,7 @@ import { OnStart } from "@flamework/core";
 import { Logger } from "@rbxts/log";
 import { SuperRoom, IRoomAttributes, IRoomComponent } from "./Room/SuperRoom";
 import { ServerSettings } from "server/ServerSettings";
-import { RunService } from "@rbxts/services";
+import { CollectionService, RunService, Workspace } from "@rbxts/services";
 import { IDoorAttributes, IDoorComponent, SuperDoor } from "./SuperDoor";
 
 interface IRushComponent extends Model {
@@ -85,6 +85,8 @@ export class Rush extends BaseComponent<{}, IRushComponent> implements OnStart {
             this.instance.PrimaryPart.PivotTo(goalCFrame);
             alpha += delta / relativeSpeed;
 
+            this.attack()
+
             if(alpha >= 1) {
                 connection.Disconnect();
                 this.updateWaypointCounter();
@@ -95,14 +97,50 @@ export class Rush extends BaseComponent<{}, IRushComponent> implements OnStart {
         return connection;
     }
 
+    private attack(): void {
+        const room: SuperRoom<IRoomAttributes, IRoomComponent> = this.rooms[this.roomCounter];
+        if(!room) { return; }
+
+        const players: Player[] | undefined = room.getPlayers();
+        if(!players) { return; }
+        players.forEach(player => {
+            if(!player.Character) { return; }
+            const to: Vector3 | undefined = player.Character.PrimaryPart?.Position as Vector3;
+            if(!to) { return; }
+            if(!this.instance.PrimaryPart) { return; }
+            
+            const from = this.instance.PrimaryPart.Position;
+            const direction = to.sub(from);
+
+            const raycastParams = new RaycastParams();
+            raycastParams.FilterType = Enum.RaycastFilterType.Exclude;
+            raycastParams.FilterDescendantsInstances = CollectionService.GetTagged("IgnoreRush");;
+        
+            const result = Workspace.Raycast(from, direction, raycastParams);
+            if(result && result.Instance.IsDescendantOf(player.Character)) {
+                const humanoid: Humanoid |undefined = player.Character.FindFirstChild("Humanoid") as Humanoid;
+                if(humanoid) {
+                    const inWardrobe = player.Character.GetAttribute("InWardrobe") as boolean | undefined;
+                    const underBed = player.Character.GetAttribute("UnderBed") as boolean | undefined;
+                    if(inWardrobe !== true && underBed !== true) {
+                        humanoid.TakeDamage(humanoid.Health);
+                        this.logger.Debug("Rush killed player: " + tostring(player.Character) + " w: " + tostring(inWardrobe) + " b: " + tostring(underBed));
+                    }
+                }
+            }
+        });
+    }
+
     private updateWaypointCounter(): void {
         this.waypointCounter++;
         if(this.waypointCounter > this.rooms[this.roomCounter].getRushWaypoints().GetChildren().size()) {
             this.roomCounter++;
             this.waypointCounter = 1;
-            const door: SuperDoor<IDoorAttributes, IDoorComponent> | undefined = this.rooms[this.roomCounter].getDoor();
-            if(door) {
-                door.openByRush();
+            if(this.roomCounter < this.rooms.size()) {
+                const door: SuperDoor<IDoorAttributes, IDoorComponent> | undefined = this.rooms[this.roomCounter].getDoor();
+                if(door) {
+                    door.openByRush();
+                }
             }
         }
     }

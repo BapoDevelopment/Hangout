@@ -62,10 +62,7 @@ export class SuperDoor<A extends IDoorAttributes, I extends IDoorComponent> exte
     }
 
     private openDoor() {
-        if(this.state === DoorState.OPEN) {
-            this.logger?.Warn("Door already opened.");
-            return;
-        }
+        if(this.state === DoorState.OPEN) { return; }
         this.state = DoorState.OPEN;
 
         const tweenInfo = new TweenInfo(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.Out, 0, false, 0);

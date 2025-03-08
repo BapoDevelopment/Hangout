@@ -13,9 +13,14 @@ export const ServerSettings = {
             DMG: 50,
         },
         RUSH: {
+            SPAWN_RATES_IN_PERCENT: {
+                BEFORE_ROOM_50: 25,
+                AFTER_ROOM_50: 10,
+            },
             MOVE_THROUGHT_N_ROOMS_FROM: 3,
             SPAWN_N_ROOMS_BEFORE: 2,
-            SPEED: 500,
+            SPEED: 35,
+            MAX_DISTANCE: 500000,
         },
     },
 };
