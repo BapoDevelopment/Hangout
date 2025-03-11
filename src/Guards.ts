@@ -29,6 +29,7 @@ declare global {
             Drawer: Model;
             Wardrobe: Model;
             Bed: Model;
+            AccentLamp: Model;
         };
         Tools: Folder & {
             Key: Tool & {

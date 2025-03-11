@@ -24,8 +24,9 @@ interface IDrawerComponent extends Instance {
         Plate: Part;
         Knob: Part;
     }
-    Primary: Part;
-    move: Sound;
+    Primary: Part & {
+        move: Sound;
+    }
 }
 const instanceGuard = Flamework.createGuard<IDrawerComponent>();
 
@@ -80,8 +81,7 @@ export class Drawer extends BaseComponent <{}, IDrawerComponent> implements OnSt
         });
 
         tween.Play();
-        const moveSound: Sound = this.instance.FindFirstChild("move") as Sound;
-        this.audioService.playSound(moveSound);
+        this.audioService.playSound(this.instance.Primary.move);
     }
 
     public destroy(): void {

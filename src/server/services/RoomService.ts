@@ -4,6 +4,7 @@ import { Logger } from "@rbxts/log/out/Logger";
 import { CollectionService, ServerStorage } from "@rbxts/services";
 import { Bed } from "server/components/Bed";
 import { Drawer } from "server/components/Drawer";
+import { AccentLamp } from "server/components/Lamp/AccentLamp";
 import { RegularDoor } from "server/components/RegularDoor";
 import { Room } from "server/components/Room/Room";
 import { IDoorAttributes, IDoorComponent, SuperDoor } from "server/components/SuperDoor";
@@ -49,6 +50,8 @@ export class RoomService {
                     case "BedPlaceholder":
                         forniture = ServerStorage.Furniture.Bed.Clone();
                         break;
+                    case "AccentLampPlaceholder":
+                        forniture = ServerStorage.Furniture.AccentLamp.Clone();
                     default:
                         break;
                 }
@@ -74,6 +77,11 @@ export class RoomService {
                     case "BedPlaceholder":
                         components.waitForComponent<Bed>(forniture).then((value) => {
                             room.addBed(value);
+                        });
+                        break;
+                    case "AccentLampPlaceholder":
+                        components.waitForComponent<AccentLamp>(forniture).then((value) => {
+                            room.addAccentLamp(value);
                         });
                         break;
                     default:

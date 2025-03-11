@@ -8,8 +8,8 @@ import { SharedSettings } from "shared/SharedSettings";
 import { HidingSpot, HidingSpotState, IHidingSpotComponent } from "./HidingSpot";
 
 interface IBedComponent extends IHidingSpotComponent {
-    open: Sound;
     Primary: Part & {
+        open: Sound;
         FrontToggle: Attachment;
         LeftToggle: Attachment;
         RightToggle: Attachment;
@@ -72,8 +72,7 @@ export class Bed extends HidingSpot <{}, IBedComponent> implements OnStart {
         }
         
         //Play crouch Sound
-        const crouchSound: Sound = this.instance.FindFirstChild("open") as Sound;
-        this.audioService.playSound(crouchSound);
+        this.audioService.playSound(this.instance.Primary.open);
 
         const humanoidRootPart: Part | undefined = player.Character.FindFirstChild("HumanoidRootPart") as Part;
         if(!humanoidRootPart) {
@@ -114,8 +113,7 @@ export class Bed extends HidingSpot <{}, IBedComponent> implements OnStart {
         this.characterLeaveHidingConnection?.Disconnect();
 
         //Play open Sound
-        const crouchSound: Sound = this.instance.FindFirstChild("open") as Sound;
-        this.audioService.playSound(crouchSound);
+        this.audioService.playSound(this.instance.Primary.open);
 
         const rbxSignal: RBXScriptSignal | undefined = this.animate(player, "GET_UP", this.enteredSide);
         if(rbxSignal) {

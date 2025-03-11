@@ -5,12 +5,11 @@ import { TweenService } from "@rbxts/services"
 import { Events } from "server/network";
 import { AudioService } from "server/services/AudioService";
 import { CollisionGroupService } from "server/services/CollisionGroupService";
-import { SharedSettings } from "shared/SharedSettings";
 import { HidingSpot, HidingSpotState, IHidingSpotComponent } from "./HidingSpot";
 
 interface IWardrobeComponent extends IHidingSpotComponent {
-    open: Sound;
     Primary: Part & {
+        open: Sound;
         Toggle: Attachment;
     };
     Build: Model & {
@@ -81,8 +80,7 @@ export class Wardrobe extends HidingSpot <{}, IWardrobeComponent> implements OnS
         this.openWardrobe();
 
         //Play open Sound
-        const openSound: Sound = this.instance.FindFirstChild("open") as Sound;
-        this.audioService.playSound(openSound);
+        this.audioService.playSound(this.instance.Primary.open);
 
         //Move Player
         const playerMovedToEntrance: RBXScriptSignal | undefined = this.moveCharacterToMarkerCFrame(player.Character, this.instance.Markers.Entrance.CFrame, 0.18);
@@ -126,8 +124,7 @@ export class Wardrobe extends HidingSpot <{}, IWardrobeComponent> implements OnS
         this.openWardrobe();
 
         //Play open Sound
-        const openSound: Sound = this.instance.FindFirstChild("open") as Sound;
-        this.audioService.playSound(openSound);
+        this.audioService.playSound(this.instance.Primary.open);
 
         //Move Player
         const playerMovedToEntrance: RBXScriptSignal | undefined = this.moveCharacterToMarkerCFrame(player.Character,

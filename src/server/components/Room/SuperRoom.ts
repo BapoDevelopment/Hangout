@@ -8,6 +8,9 @@ import { LockedDoor } from "../LockedDoor";
 import { Key } from "../Key";
 import { Wardrobe } from "../Wardrobe";
 import { Bed } from "../Bed";
+import { TweenService } from "@rbxts/services";
+import { AudioService } from "server/services/AudioService";
+import { AccentLamp } from "../Lamp/AccentLamp";
 
 export interface IRoomComponent extends Instance {
     Build: Model;
@@ -31,12 +34,18 @@ export interface IRoomAttributes {
 
 @Component()
 export class SuperRoom<A extends IRoomAttributes, I extends IRoomComponent> extends BaseComponent<A, I> implements OnStart {
+    protected audioService: AudioService | undefined;
     protected doorsComponent: SuperDoor<IDoorAttributes, IDoorComponent> | undefined;
     protected zone: Zone | undefined;
     protected drawers: Drawer[] = [];
     protected wardrobes: Wardrobe[] = [];
     protected beds: Bed[] = [];
+    protected accentLamps: AccentLamp[] = [];
     protected keyComponent: Key | undefined;
+
+    constructor() {
+        super();
+    }
 
     onStart() {
         const roomModel = this.instance;
@@ -72,8 +81,16 @@ export class SuperRoom<A extends IRoomAttributes, I extends IRoomComponent> exte
         this.beds.push(bed);
     }
 
+    public addAccentLamp(accentLamp: AccentLamp) {
+        this.accentLamps.push(accentLamp);
+    }
+
     public getDoor(): SuperDoor<IDoorAttributes, IDoorComponent> | undefined {
         return this.doorsComponent;
+    }
+
+    public getAccentLamps(): AccentLamp[] {
+        return this.accentLamps;
     }
 
     public setDoor(door: SuperDoor<IDoorAttributes, IDoorComponent>) {
@@ -101,5 +118,12 @@ export class SuperRoom<A extends IRoomAttributes, I extends IRoomComponent> exte
 
     public getRushWaypoints(): Folder {
         return this.instance.Monster.Rush.Waypoints;
+    }
+
+    
+    public flickerLamps(): void {
+        this.accentLamps.forEach((accentLamp) => {
+            accentLamp.flicker();
+        });
     }
 }

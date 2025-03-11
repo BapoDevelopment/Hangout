@@ -17,7 +17,7 @@ export const ServerSettings = {
                 BEFORE_ROOM_50: 25,
                 AFTER_ROOM_50: 10,
             },
-            MOVE_THROUGHT_N_ROOMS_FROM: 3,
+            MOVE_THROUGHT_N_ROOMS_FROM: 2,
             SPAWN_N_ROOMS_BEFORE: 2,
             SPEED: 35,
             MAX_DISTANCE: 500000,

@@ -9,8 +9,9 @@ export enum HidingSpotState {
 }
 
 export interface IHidingSpotComponent extends Instance {
-    open: Sound;
-    Primary: Part;
+    Primary: Part & {
+        open: Sound;
+    };
     Build: Model;
     Markers: Model & {
         Spot: Part,

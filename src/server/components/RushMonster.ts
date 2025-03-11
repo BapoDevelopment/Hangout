@@ -130,7 +130,7 @@ export class Rush extends BaseComponent<{}, IRushComponent> implements OnStart {
                     const inWardrobe = player.Character.GetAttribute("InWardrobe") as boolean | undefined;
                     const underBed = player.Character.GetAttribute("UnderBed") as boolean | undefined;
                     if(inWardrobe !== true && underBed !== true) {
-                        humanoid.TakeDamage(humanoid.Health);
+                        //humanoid.TakeDamage(humanoid.Health);
                         this.logger.Debug("Rush killed player: " + tostring(player.Character) + " w: " + tostring(inWardrobe) + " b: " + tostring(underBed));
                     }
                 }
@@ -148,6 +148,9 @@ export class Rush extends BaseComponent<{}, IRushComponent> implements OnStart {
                 if(door) {
                     door.openByRush();
                 }
+                this.rooms[this.roomCounter].getAccentLamps().forEach(accentLamp => {
+                    accentLamp.break();
+                });
             } else {
                 this.audioService.playSoundWithCallback(this.instance.Primary.Despawn, () => {
                     this.destroy();

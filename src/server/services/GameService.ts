@@ -21,7 +21,7 @@ export class GameService implements OnStart {
         this.logger.Info("Initialised Game");
     }
 
-    public onDoorOpened(number: number): void {
+    public onDoorOpened(number: number, openedByPlayer: boolean): void {
         const roomCounter: number = this.roomGenerationService.getRoomCounter();
         if(roomCounter === ServerSettings.GAME.LAST_ROOM) {
             this.roomGenerationService.generateRoom100();
@@ -31,7 +31,9 @@ export class GameService implements OnStart {
         this.roomGenerationService.checkAndDestroyOldRooms();
         this.roomGenerationService.blockLastDoor();
 
-        this.spawnEntities(number);
+        if(openedByPlayer) {
+            this.spawnEntities(number);
+        }
     }
 
     private spawnEntities(roomNumber: number): void {
@@ -53,6 +55,10 @@ export class GameService implements OnStart {
                     rooms.push(room);
                 }
             }
+            const currentRoom: SuperRoom<IRoomAttributes, IRoomComponent> | undefined = this.roomGenerationService.getRoom(roomNumber + 1);
+            if(currentRoom) {
+                currentRoom.flickerLamps();
+            };
             rush.spawn(rooms);
         });
     }

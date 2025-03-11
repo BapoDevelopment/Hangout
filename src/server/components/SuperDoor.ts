@@ -52,16 +52,16 @@ export class SuperDoor<A extends IDoorAttributes, I extends IDoorComponent> exte
     }
 
     public openByRush() {
-        this.openDoor();
+        this.openDoor(false);
         if(this.logger) { this.logger.Debug("Rush opened Door " + tostring(this.attributes.Number)); }
     }
 
     protected openByPlayer(player: Player) {
-        this.openDoor();
+        this.openDoor(true);
         if(this.logger) { this.logger.Debug(tostring(player) + " opened Door " + tostring(this.attributes.Number)); }
     }
 
-    private openDoor() {
+    private openDoor(openedByPlayer: boolean) {
         if(this.state === DoorState.OPEN) { return; }
         this.state = DoorState.OPEN;
 
@@ -73,7 +73,7 @@ export class SuperDoor<A extends IDoorAttributes, I extends IDoorComponent> exte
         tween.Play();
         
         if(this.audioService) { this.audioService.playSound(this.instance.open); }
-        if(this.gameService) { this.gameService.onDoorOpened(this.attributes.Number); }
+        if(this.gameService) { this.gameService.onDoorOpened(this.attributes.Number, openedByPlayer); }
     }
 
     public destroy(): void {
