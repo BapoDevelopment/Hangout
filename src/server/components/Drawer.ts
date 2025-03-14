@@ -3,6 +3,7 @@ import { Flamework, OnStart } from "@flamework/core";
 import { Logger } from "@rbxts/log/out/Logger";
 import { TweenService } from "@rbxts/services"
 import { AudioService } from "server/services/AudioService";
+import { AbstractToolBaseComponent, IToolAttributes, IToolComponent } from "./Items/AbstractToolBaseComponent";
 
 enum DrawerState {
     OPEN = "OPEN",
@@ -21,8 +22,12 @@ interface IDrawerComponent extends Instance {
         };
     }
     BottomDraw: Model & {
-        Plate: Part;
-        Knob: Part;
+        Plate: Part & {
+            ItemLocation: Attachment;
+        };
+        Knob: Part & {
+            Toggle: Attachment;
+        };
     }
     Primary: Part & {
         move: Sound;
@@ -37,6 +42,8 @@ const instanceGuard = Flamework.createGuard<IDrawerComponent>();
 export class Drawer extends BaseComponent <{}, IDrawerComponent> implements OnStart {
 
     private state: DrawerState = DrawerState.CLOSED;
+    private topDrawerItem: AbstractToolBaseComponent<IToolAttributes, IToolComponent> | undefined;
+    private botomDrawerItem: AbstractToolBaseComponent<IToolAttributes, IToolComponent> | undefined;
 
     constructor(private audioService: AudioService, private readonly logger: Logger) {
         super();
@@ -82,6 +89,22 @@ export class Drawer extends BaseComponent <{}, IDrawerComponent> implements OnSt
 
         tween.Play();
         this.audioService.playSound(this.instance.Primary.move);
+    }
+
+    public isTopItemLocationFree(): boolean {
+        return this.topDrawerItem === undefined;
+    }
+
+    public isBottomItemLocationFree(): boolean {
+        return this.botomDrawerItem === undefined;
+    }
+
+    public getTopItemLocationAttachment(): Attachment {
+        return this.instance.TopDraw.Plate.ItemLocation;
+    }
+
+    public getBottomItemLocationAttachment(): Attachment {
+        return this.instance.BottomDraw.Plate.ItemLocation;
     }
 
     public destroy(): void {

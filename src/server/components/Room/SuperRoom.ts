@@ -73,6 +73,10 @@ export class SuperRoom<A extends IRoomAttributes, I extends IRoomComponent> exte
         this.drawers.push(drawer);
     }
 
+    public getDrawers(): Drawer[] {
+        return this.drawers;
+    }
+
     public addWardrobe(wardrobe: Wardrobe) {
         this.wardrobes.push(wardrobe);
     }

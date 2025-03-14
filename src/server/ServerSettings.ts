@@ -6,7 +6,7 @@ export const ServerSettings = {
         LAST_ROOM: 100,
     },
     ROOMS: {
-        DOOR_LOCKED_PROBABILITY: 100,
+        DOOR_LOCKED_PROBABILITY: 0,
     },
     ENTITIES: {
         VOID: {
@@ -21,6 +21,11 @@ export const ServerSettings = {
             SPAWN_N_ROOMS_BEFORE: 2,
             SPEED: 35,
             MAX_DISTANCE: 500000,
+        },
+    },
+    ITEMS: {
+        FLASHLIGHT: {
+            SPAWN_RATE_IN_PERCENT: 100,
         },
     },
 };

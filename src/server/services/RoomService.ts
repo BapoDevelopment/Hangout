@@ -4,6 +4,7 @@ import { Logger } from "@rbxts/log/out/Logger";
 import { CollectionService, ServerStorage } from "@rbxts/services";
 import { Bed } from "server/components/Bed";
 import { Drawer } from "server/components/Drawer";
+import { Flashlight } from "server/components/Items/Flashlight";
 import { AccentLamp } from "server/components/Lamp/AccentLamp";
 import { RegularDoor } from "server/components/RegularDoor";
 import { Room } from "server/components/Room/Room";
@@ -91,6 +92,31 @@ export class RoomService {
         });
         if(math.random() * 100 < ServerSettings.ROOMS.DOOR_LOCKED_PROBABILITY) {
             room.lock();
+        }
+    }
+
+    public addRandomItems(room: Room): void {
+        const drawers: Drawer[] = room.getDrawers();
+        if(!drawers) { return; }
+        if(drawers.size() <= 0) { return; }
+        
+        const randomDrawer = drawers[math.random(0, drawers.size() - 1)];
+        if(!randomDrawer.isTopItemLocationFree() && !randomDrawer.isBottomItemLocationFree()) { return; }
+        
+        const components = Dependency<Components>();
+        if(math.random() * 100 <= ServerSettings.ITEMS.FLASHLIGHT.SPAWN_RATE_IN_PERCENT) {
+
+            const newFlashlight = ServerStorage.Tools.Flashlight.Clone();
+            components.onComponentAdded<Flashlight>((flashlight) => {
+                if(flashlight.instance === newFlashlight) {
+                    newFlashlight.PivotTo(new CFrame(randomDrawer.getTopItemLocationAttachment().WorldPosition).mul(CFrame.fromEulerAnglesXYZ(math.rad(90), 0, math.rad(-90))));
+                    newFlashlight.Parent = randomDrawer.getTopItemLocationAttachment();
+                    
+                    flashlight.activateProximityPromt();
+                    flashlight.weldOnTo(randomDrawer.instance.TopDraw.Plate);
+                }
+            })
+            components.addComponent<Flashlight>(newFlashlight);
         }
     }
 }

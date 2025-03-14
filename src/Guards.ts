@@ -38,6 +38,13 @@ declare global {
                     ProximityPrompt: ProximityPrompt;
                 };
             };
+            Flashlight: Tool & {
+                Handle: MeshPart & {
+                    ProximityPromtPosition: Attachment;
+                    ProximityPrompt: ProximityPrompt;
+                    SpotLight: SpotLight;
+                };
+            };
         }
     }
 }
