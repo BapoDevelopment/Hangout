@@ -5,7 +5,7 @@ import { Zone } from "@rbxts/zone-plus";
 import { Drawer } from "../Drawer";
 import { IDoorAttributes, IDoorComponent, SuperDoor } from "../SuperDoor";
 import { LockedDoor } from "../LockedDoor";
-import { Key } from "../Key";
+import { Key } from "../Items/Key";
 import { Wardrobe } from "../Wardrobe";
 import { Bed } from "../Bed";
 import { TweenService } from "@rbxts/services";

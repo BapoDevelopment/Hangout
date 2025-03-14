@@ -3,7 +3,7 @@ import { ServerStorage } from "@rbxts/services";
 import { Dependency } from "@flamework/core";
 import { LockedDoor } from "../LockedDoor";
 import { Logger } from "@rbxts/log/out/Logger";
-import { Key } from "../Key";
+import { Key } from "../Items/Key";
 import { IRoomAttributes, IRoomComponent, SuperRoom } from "./SuperRoom";
 
 interface IRegularRoomComponent extends IRoomComponent {
@@ -40,28 +40,19 @@ export class Room extends SuperRoom <IRoomAttributes, IRegularRoomComponent> {
         }
         
 		const newKey = ServerStorage.Tools.Key.Clone();
-        newKey.SetAttribute("Door", this.attributes.Number);
-        newKey.PivotTo(new CFrame(hidingSpotDrawer.instance.TopDraw.Plate.ItemLocation.WorldPosition).mul(CFrame.fromEulerAnglesXYZ(math.rad(90), 0, math.rad(-90))));
-        
-        let weld: WeldConstraint = new Instance("WeldConstraint") as WeldConstraint;
-        weld.Part0 = newKey.Handle;
-        weld.Part1 = hidingSpotDrawer.instance.TopDraw.Plate;
-        weld.Parent = hidingSpotDrawer.instance.TopDraw.Plate;
-
-        newKey.Handle.ProximityPrompt.Triggered.Connect((player) => {
-            newKey.Handle.Anchored = false;
-            newKey.Handle.CanCollide = false;
-            newKey.Enabled = true;
-
-            if(player.Character) {
-                weld.Destroy();
-                newKey.Handle.ProximityPrompt.Destroy();
-                newKey.Parent = player.Character;
+        components.onComponentAdded<Key>((key) => {
+            key.instance.Handle;
+            if(key.instance === newKey) {
+                newKey.PivotTo(new CFrame(hidingSpotDrawer.instance.TopDraw.Plate.ItemLocation.WorldPosition).mul(CFrame.fromEulerAnglesXYZ(math.rad(90), 0, math.rad(-90))));
+                newKey.Parent = hidingSpotDrawer.instance.TopDraw.Plate.ItemLocation;
+                
+                key.setNumber(this.attributes.Number);
+                key.activateProximityPromt();
+                key.weldOnTo(hidingSpotDrawer.instance.TopDraw.Plate);
             }
-        });
-
+        })
         this.keyComponent = components.addComponent<Key>(newKey);
-        newKey.Parent = hidingSpotDrawer.instance.TopDraw.Plate.ItemLocation;
+
         this.createLockedDoor();
     }
 
