@@ -1,6 +1,7 @@
 import { Component, BaseComponent } from "@flamework/components";
 import { OnStart } from "@flamework/core";
 import { Logger } from "@rbxts/log/out/Logger";
+import { ToolService } from "server/services/ToolService";
 
 export interface IToolComponent extends Tool {
     Handle: MeshPart & {
@@ -15,7 +16,9 @@ export interface IToolAttributes {}
 @Component()
 export abstract class AbstractToolBaseComponent<A extends IToolAttributes, I extends IToolComponent> extends BaseComponent<A, I> implements OnStart {
 
-    constructor(protected readonly logger: Logger) {
+    private stackable: boolean = false;
+
+    constructor(protected toolService: ToolService, protected readonly logger: Logger) {
         super();
     }
 
@@ -41,8 +44,13 @@ export abstract class AbstractToolBaseComponent<A extends IToolAttributes, I ext
         this.instance.Handle.ProximityPrompt.Enabled = false;
     }
 
+    public isStackable(): boolean {
+        return this.stackable;
+    }
+
     protected onProximityPromtActivated(player: Player): void {
         if(player.Character) {
+            if(!this.toolService.isStackable(this, player)) { return; }
             this.deactivateProximityPromt();
             this.instance.Handle.WeldConstraint.Enabled = false;
             this.equipTool(player);
@@ -55,7 +63,16 @@ export abstract class AbstractToolBaseComponent<A extends IToolAttributes, I ext
         this.instance.Handle.CanCollide = false;
 
         if(player.Character) {
+            const humanoid: Humanoid = player.Character.FindFirstChild("Humanoid") as Humanoid;
+            if(humanoid) {
+                humanoid.UnequipTools();
+            }
+
             this.instance.Parent = player.Character;
         }
+    }
+
+    protected setStackable(stackable: boolean) {
+        this.stackable = stackable;
     }
 }

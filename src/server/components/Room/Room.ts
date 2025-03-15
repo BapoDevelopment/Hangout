@@ -5,6 +5,9 @@ import { LockedDoor } from "../LockedDoor";
 import { Logger } from "@rbxts/log/out/Logger";
 import { Key } from "../Items/Key";
 import { IRoomAttributes, IRoomComponent, SuperRoom } from "./SuperRoom";
+import { AbstractToolBaseComponent, IToolAttributes, IToolComponent } from "../Items/AbstractToolBaseComponent";
+import { Drawer } from "../Drawer";
+import { Slot } from "../Furniture/Slot";
 
 interface IRegularRoomComponent extends IRoomComponent {
     Build: Model;
@@ -25,37 +28,57 @@ export class Room extends SuperRoom <IRoomAttributes, IRegularRoomComponent> {
         super();
     }
 
+    public addItem(item: AbstractToolBaseComponent<IToolAttributes, IToolComponent>): Slot | undefined {
+        if(!this.drawers) { return; }
+        if(this.drawers.size() <= 0) { return; }
+        
+        const randomDrawer = this.drawers[math.random(0, this.drawers.size() - 1)];
+        const freeSlots: Slot[] = randomDrawer.getFreeSlots();
+        if(freeSlots.size() === 0) { return; }
+
+        const randomSlot: Slot = freeSlots[math.random(0, freeSlots.size() -1)];
+        randomSlot.setItem(item);
+
+        return randomSlot;
+    }
+
+    public hasFreeItemSlots(): boolean {
+        this.drawers.forEach(drawer => {
+            if(drawer.getFreeSlots().size() > 0) {
+                return true;
+            }
+        });
+
+        return false;
+    }
+
     public lock(): void {
         if(this.drawers.size() === 0) {
-            this.logger.Info("Room doesn't have furniture to hide lock in it.");
+            this.logger.Info("Room doesn't have furniture to hide key in it.");
             return;
         }
-        const components = Dependency<Components>();
-
-        const hidingSpotIndex = math.random(0, this.drawers.size() - 1);
-        const hidingSpotDrawer = this.drawers[hidingSpotIndex];
-        if(hidingSpotDrawer.instance.TopDraw.Plate.ItemLocation.FindFirstChild("Key")) {
-            this.logger.Info("Drawer already has a Key.");
-            return;
+        if(!this.hasFreeItemSlots()) {
+            this.logger.Info("Room doesn't have free item slots to hide key in it.");
         }
-        
+        const components = Dependency<Components>();        
 		const newKey = ServerStorage.Tools.Key.Clone();
+
         components.onComponentAdded<Key>((key) => {
             key.instance.Handle;
             if(key.instance === newKey) {
-                newKey.PivotTo(new CFrame(hidingSpotDrawer.instance.TopDraw.Plate.ItemLocation.WorldPosition).mul(CFrame.fromEulerAnglesXYZ(math.rad(90), 0, math.rad(-90))));
-                newKey.Parent = hidingSpotDrawer.instance.TopDraw.Plate.ItemLocation;
+                const slot: Slot | undefined = this.addItem(key);
+                if(!slot) { return; }
                 
                 key.setNumber(this.attributes.Number);
                 key.activateProximityPromt();
-                key.weldOnTo(hidingSpotDrawer.instance.TopDraw.Plate);
+                key.weldOnTo(slot.instance);
             }
         })
         this.keyComponent = components.addComponent<Key>(newKey);
 
         this.createLockedDoor();
     }
-
+    
     private createLockedDoor(): void {
         if(this.instance.FindFirstChild("Locked")) { return; }
         
