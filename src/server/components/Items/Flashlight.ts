@@ -4,6 +4,7 @@ import { Logger } from "@rbxts/log";
 import { AbstractToolBaseComponent, IToolAttributes, IToolComponent } from "./AbstractToolBaseComponent";
 import { ToolService } from "server/services/ToolService";
 import { ServerSettings } from "server/ServerSettings";
+import { TweenService } from "@rbxts/services";
 
 interface IFlashlightComponent extends IToolComponent {
     Handle: MeshPart & {
@@ -11,6 +12,7 @@ interface IFlashlightComponent extends IToolComponent {
         ProximityPrompt: ProximityPrompt;
         WeldConstraint: WeldConstraint;
         SpotLight: SpotLight;
+        Switch: BasePart;
     };
 }
 

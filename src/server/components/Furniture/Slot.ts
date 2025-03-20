@@ -27,7 +27,7 @@ export class Slot extends BaseComponent<{}, ISlotComponent> {
 
     public setItem(item: AbstractToolBaseComponent<IToolAttributes, IToolComponent>): boolean {
         if (!this.isFree()) {
-            this.logger.Debug("Slot already occupied");
+            this.logger.Debug("Slot already occupied ");
             return false;
         }
         

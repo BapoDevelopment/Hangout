@@ -20,6 +20,9 @@ export abstract class AbstractToolBaseComponent<A extends IToolAttributes, I ext
 
     constructor(protected toolService: ToolService, protected readonly logger: Logger) {
         super();
+
+        this.instance.Equipped.Connect(() => this.onEquip());
+        this.instance.Unequipped.Connect(() => this.onUnequip());
     }
 
     onStart(): void {
@@ -53,12 +56,12 @@ export abstract class AbstractToolBaseComponent<A extends IToolAttributes, I ext
             if(!this.toolService.isStackable(this, player)) { return; }
             this.deactivateProximityPromt();
             this.instance.Handle.WeldConstraint.Enabled = false;
-            this.equipTool(player);
+            this.giveTool(player);
         }
         return;
     }
 
-    protected equipTool(player: Player): void {
+    protected giveTool(player: Player): void {
         this.instance.Handle.Anchored = false;
         this.instance.Handle.CanCollide = false;
 
@@ -74,5 +77,13 @@ export abstract class AbstractToolBaseComponent<A extends IToolAttributes, I ext
 
     protected setStackable(stackable: boolean) {
         this.stackable = stackable;
+    }
+
+    protected onEquip(): void {
+        this.logger.Info(`${this.instance} equipped.`);
+    }
+
+    protected onUnequip(): void {
+        this.logger.Info(`${this.instance} unequipped.`);
     }
 }

@@ -1,5 +1,4 @@
-import { Components } from "@flamework/components";
-import { Dependency, OnStart, Service } from "@flamework/core";
+import { OnStart, Service } from "@flamework/core";
 import { Logger } from "@rbxts/log/out/Logger";
 import { AbstractToolBaseComponent, IToolAttributes, IToolComponent } from "server/components/Items/AbstractToolBaseComponent";
 

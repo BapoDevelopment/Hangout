@@ -103,7 +103,7 @@ export class RoomService {
         if(drawers.size() <= 0) { return; }
         
         const randomDrawer = drawers[math.random(0, drawers.size() - 1)];
-        const freeSlots: Slot[] = randomDrawer.getFreeSlots();
+        let freeSlots: Slot[] = randomDrawer.getFreeSlots();
         if(freeSlots.size() === 0) { return; }
         
         const components = Dependency<Components>();
@@ -112,6 +112,12 @@ export class RoomService {
             const newFlashlight = ServerStorage.Tools.Flashlight.Clone();
             components.onComponentAdded<Flashlight>((flashlight) => {
                 if(flashlight.instance === newFlashlight) {
+                    freeSlots = randomDrawer.getFreeSlots();
+                    if(freeSlots.size() === 0) {
+                        flashlight.destroy();
+                        this.logger.Warn("There should be free item slots, but there are none.");
+                        return;
+                    }
                     const randomSlot: Slot = freeSlots[math.random(0, freeSlots.size() -1)];
                     randomSlot.setItem(flashlight);
                     flashlight.activateProximityPromt();
