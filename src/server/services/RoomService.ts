@@ -2,16 +2,15 @@ import { Components } from "@flamework/components/out/components";
 import { Dependency, Service } from "@flamework/core";
 import { Logger } from "@rbxts/log/out/Logger";
 import { CollectionService, ServerStorage } from "@rbxts/services";
-import { Bed } from "server/components/Bed";
-import { Drawer } from "server/components/Drawer";
-import { Slot } from "server/components/Furniture/Slot";
-import { AbstractToolBaseComponent, IToolAttributes, IToolComponent } from "server/components/Items/AbstractToolBaseComponent";
+import { RegularDoor } from "server/components/Furniture/Doors/RegularDoor";
+import { IDoorAttributes, IDoorComponent, SuperDoor } from "server/components/Furniture/Doors/SuperDoor";
+import { Bed } from "server/components/Furniture/HidingSpots/Bed";
+import { Wardrobe } from "server/components/Furniture/HidingSpots/Wardrobe";
+import { Drawer } from "server/components/Furniture/ItemSlots/Drawer";
+import { Slot } from "server/components/Furniture/ItemSlots/Slot";
 import { Flashlight } from "server/components/Items/Flashlight";
 import { AccentLamp } from "server/components/Lamp/AccentLamp";
-import { RegularDoor } from "server/components/RegularDoor";
 import { Room } from "server/components/Room/Room";
-import { IDoorAttributes, IDoorComponent, SuperDoor } from "server/components/SuperDoor";
-import { Wardrobe } from "server/components/Wardrobe";
 import { ServerSettings } from "server/ServerSettings";
 
 @Service()

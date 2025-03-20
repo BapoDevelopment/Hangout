@@ -3,7 +3,7 @@ import { Dependency, OnStart } from "@flamework/core";
 import { Logger } from "@rbxts/log/out/Logger";
 import { TweenService } from "@rbxts/services"
 import { AudioService } from "server/services/AudioService";
-import { Slot } from "./Furniture/Slot";
+import { Slot } from "./Slot";
 
 enum DrawerState {
     OPEN = "OPEN",

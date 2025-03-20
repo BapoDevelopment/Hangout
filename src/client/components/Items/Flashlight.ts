@@ -1,8 +1,8 @@
 import { Component } from "@flamework/components";
 import { OnStart } from "@flamework/core";
 import { Logger } from "@rbxts/log";
-import { AbstractToolBaseComponent } from "./Items/AbstractToolBaseComponent";
 import { Events } from "client/network";
+import { AbstractToolBaseComponent } from "./AbstractToolBaseComponent";
 
 interface IFlashlightComponent extends Tool {
     Handle: MeshPart & {
@@ -25,13 +25,11 @@ export class Flashlight extends AbstractToolBaseComponent<IFlashlightAttributes,
 
     constructor(protected logger: Logger) {
         super(logger);
-        logger.Info("Client Flashlight");
     }
     
     onStart(): void {}
 
     protected onActivated(): void {
-        this.logger.Info("Client Flashlight wurde benutzt! " + tostring(this.instance));
         Events.items.flashlight.clickedEvent.fire();
     }
 }

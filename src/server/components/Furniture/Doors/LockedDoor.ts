@@ -2,8 +2,8 @@ import { Component } from "@flamework/components";
 import { OnStart } from "@flamework/core";
 import { AudioService } from "server/services/AudioService";
 import { Logger } from "@rbxts/log/out/Logger";
-import { IDoorAttributes, IDoorComponent, SuperDoor } from "server/components/SuperDoor";
 import { GameService } from "server/services/GameService";
+import { IDoorAttributes, IDoorComponent, SuperDoor } from "./SuperDoor";
 
 interface ILockedDoorComponent extends IDoorComponent {
     PrimaryPart: Part;

@@ -2,15 +2,14 @@ import { BaseComponent } from "@flamework/components/out/baseComponent";
 import { Component } from "@flamework/components/out/components";
 import { OnStart } from "@flamework/core/out/flamework";
 import { Zone } from "@rbxts/zone-plus";
-import { Drawer } from "../Drawer";
-import { IDoorAttributes, IDoorComponent, SuperDoor } from "../SuperDoor";
-import { LockedDoor } from "../LockedDoor";
+import { Drawer } from "../Furniture/ItemSlots/Drawer";
 import { Key } from "../Items/Key";
-import { Wardrobe } from "../Wardrobe";
-import { Bed } from "../Bed";
-import { TweenService } from "@rbxts/services";
 import { AudioService } from "server/services/AudioService";
 import { AccentLamp } from "../Lamp/AccentLamp";
+import { IDoorAttributes, IDoorComponent, SuperDoor } from "../Furniture/Doors/SuperDoor";
+import { Wardrobe } from "../Furniture/HidingSpots/Wardrobe";
+import { Bed } from "../Furniture/HidingSpots/Bed";
+import { LockedDoor } from "../Furniture/Doors/LockedDoor";
 
 export interface IRoomComponent extends Instance {
     Build: Model;

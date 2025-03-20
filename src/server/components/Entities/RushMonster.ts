@@ -1,11 +1,11 @@
 import { BaseComponent, Component } from "@flamework/components";
 import { OnStart } from "@flamework/core";
 import { Logger } from "@rbxts/log";
-import { SuperRoom, IRoomAttributes, IRoomComponent } from "./Room/SuperRoom";
+import { SuperRoom, IRoomAttributes, IRoomComponent } from "../Room/SuperRoom";
 import { ServerSettings } from "server/ServerSettings";
 import { CollectionService, RunService, Workspace } from "@rbxts/services";
-import { IDoorAttributes, IDoorComponent, SuperDoor } from "./SuperDoor";
 import { AudioService } from "server/services/AudioService";
+import { IDoorAttributes, IDoorComponent, SuperDoor } from "../Furniture/Doors/SuperDoor";
 
 interface IRushComponent extends Model {
     Primary: Part & {

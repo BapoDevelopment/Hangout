@@ -3,9 +3,9 @@ import { Zone } from "@rbxts/zone-plus";
 import { OnStart } from "@flamework/core";
 import { AudioService } from "server/services/AudioService";
 import { Logger } from "@rbxts/log/out/Logger";
-import { IDoorAttributes, IDoorComponent, SuperDoor } from "server/components/SuperDoor";
 import { DoorState } from "server/Enum/DoorState";
 import { GameService } from "server/services/GameService";
+import { IDoorAttributes, IDoorComponent, SuperDoor } from "./SuperDoor";
 
 interface IRegualarDoorComponent extends IDoorComponent {
     SensorPart: Part;

@@ -3,7 +3,7 @@ import type { Logger } from "@rbxts/log/out/Logger";
 import { RoomGenerationService } from "./RoomGenerationService";
 import { ServerSettings } from "server/ServerSettings";
 import { ReplicatedStorage } from "@rbxts/services";
-import { Rush } from "server/components/RushMonster";
+import { Rush } from "server/components/Entities/RushMonster";
 import { Components } from "@flamework/components";
 import { IRoomAttributes, IRoomComponent, SuperRoom } from "server/components/Room/SuperRoom";
 
