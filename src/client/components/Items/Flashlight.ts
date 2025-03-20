@@ -3,6 +3,7 @@ import { OnStart } from "@flamework/core";
 import { Logger } from "@rbxts/log";
 import { Events } from "client/network";
 import { AbstractToolBaseComponent } from "./AbstractToolBaseComponent";
+import { Players } from "@rbxts/services";
 
 interface IFlashlightComponent extends Tool {
     Handle: MeshPart & {
@@ -30,6 +31,8 @@ export class Flashlight extends AbstractToolBaseComponent<IFlashlightAttributes,
     onStart(): void {}
 
     protected onActivated(): void {
-        Events.items.flashlight.clickedEvent.fire();
+        if(super.isToolEquipped()) {
+            Events.items.flashlight.clickedEvent.fire();
+        }
     }
 }

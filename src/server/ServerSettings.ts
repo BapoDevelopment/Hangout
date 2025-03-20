@@ -29,7 +29,7 @@ export const ServerSettings = {
         },
         FLASHLIGHT: {
             SPAWN_RATE_IN_PERCENT: 100,
-            STACKABLE: true,
+            STACKABLE: false,
         },
     },
 };

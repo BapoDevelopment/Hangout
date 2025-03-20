@@ -1,7 +1,7 @@
 import { Component, BaseComponent } from "@flamework/components";
 import { OnStart } from "@flamework/core";
 import { Logger } from "@rbxts/log/out/Logger";
-import { ContextActionService } from "@rbxts/services";
+import { ContextActionService, Players } from "@rbxts/services";
 
 export interface IToolComponent extends Tool {
     Handle: MeshPart & {
@@ -43,6 +43,17 @@ export abstract class AbstractToolBaseComponent<A extends IToolAttributes, I ext
 
     protected onActivated(): void {
         this.logger.Info("Client Tool wurde benutzt!");
+    }
+
+    protected isToolEquipped(): boolean {
+        if(Players.LocalPlayer.Character) {
+            const toolInHand = Players.LocalPlayer.Character.FindFirstChildOfClass("Tool");
+            if(toolInHand === this.instance) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     destroy(): void {
