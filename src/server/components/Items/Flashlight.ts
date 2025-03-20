@@ -5,6 +5,7 @@ import { AbstractToolBaseComponent, IToolAttributes, IToolComponent } from "./Ab
 import { ToolService } from "server/services/ToolService";
 import { ServerSettings } from "server/ServerSettings";
 import { TweenService } from "@rbxts/services";
+import { Events } from "server/network";
 
 interface IFlashlightComponent extends IToolComponent {
     Handle: MeshPart & {
@@ -25,6 +26,8 @@ interface IFlashlightAttributes extends IToolAttributes {
 })
 export class Flashlight extends AbstractToolBaseComponent<IFlashlightAttributes, IFlashlightComponent> implements OnStart{
 
+    private activateConnection: RBXScriptConnection | undefined;
+
     constructor(protected toolService: ToolService, protected readonly logger: Logger) {
         super(toolService, logger);
 
@@ -35,5 +38,31 @@ export class Flashlight extends AbstractToolBaseComponent<IFlashlightAttributes,
         this.setStackable(ServerSettings.ITEMS.FLASHLIGHT.STACKABLE);
     }
     
-    onStart(): void {}
+    onStart(): void {
+
+    }
+
+    protected onProximityPromtActivated(player: Player): boolean {
+        const flashlightEquipped: boolean = super.onProximityPromtActivated(player);
+        if(!flashlightEquipped) { return false; }
+
+        this.activateConnection = Events.items.flashlight.clickedEvent.connect((player) => {
+            this.logger.Info("recieved flashlgiht click");
+            this.onActivated(player);
+        });
+
+        return flashlightEquipped;
+    }
+
+    protected onActivated(player: Player): void {
+        if(!player) { return; }
+        this.instance.Handle.SpotLight.Enabled = !this.instance.Handle.SpotLight.Enabled;
+    }
+
+    destroy(): void {
+        super.destroy();
+        if(this.activateConnection) {
+            this.activateConnection.Disconnect();
+        }
+    }
 }

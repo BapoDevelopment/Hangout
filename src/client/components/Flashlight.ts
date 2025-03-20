@@ -1,7 +1,8 @@
-import { BaseComponent, Component } from "@flamework/components";
+import { Component } from "@flamework/components";
 import { OnStart } from "@flamework/core";
 import { Logger } from "@rbxts/log";
-import { ContextActionService, TweenService } from "@rbxts/services";
+import { AbstractToolBaseComponent } from "./Items/AbstractToolBaseComponent";
+import { Events } from "client/network";
 
 interface IFlashlightComponent extends Tool {
     Handle: MeshPart & {
@@ -20,33 +21,17 @@ interface IFlashlightAttributes {
 @Component({
     tag: "Flashlight",
 })
-class Flashlight extends BaseComponent<IFlashlightAttributes, IFlashlightComponent> implements OnStart {
+export class Flashlight extends AbstractToolBaseComponent<IFlashlightAttributes, IFlashlightComponent> implements OnStart {
 
-    constructor(private logger: Logger) {
-        super();
-
+    constructor(protected logger: Logger) {
+        super(logger);
         logger.Info("Client Flashlight");
-
-        this.instance.Equipped.Connect(() => this.onEquip());
-        this.instance.Unequipped.Connect(() => this.onUnequip());
     }
     
     onStart(): void {}
 
-    protected onEquip(): void {
-        ContextActionService.BindAction("Use" + this.instance, (_, inputState) => {
-            if(inputState === Enum.UserInputState.Begin) {
-                this.logger.Info("Client Tool wurde benutzt!");
-
-            }
-        }, false, Enum.UserInputType.MouseButton1, Enum.UserInputType.Touch, Enum.KeyCode.ButtonR2);
-    }
-
-    protected onUnequip(): void {
-        ContextActionService.UnbindAction("Client Use" + this.instance);
-    }
-
-    destroy(): void {
-        ContextActionService.UnbindAction("Client Use" + this.instance);
+    protected onActivated(): void {
+        this.logger.Info("Client Flashlight wurde benutzt! " + tostring(this.instance));
+        Events.items.flashlight.clickedEvent.fire();
     }
 }

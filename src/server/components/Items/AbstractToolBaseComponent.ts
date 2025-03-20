@@ -51,17 +51,17 @@ export abstract class AbstractToolBaseComponent<A extends IToolAttributes, I ext
         return this.stackable;
     }
 
-    protected onProximityPromtActivated(player: Player): void {
+    protected onProximityPromtActivated(player: Player): boolean {
         if(player.Character) {
-            if(!this.toolService.isStackable(this, player)) { return; }
+            if(!this.toolService.isStackable(this, player)) { return false; }
             this.deactivateProximityPromt();
             this.instance.Handle.WeldConstraint.Enabled = false;
-            this.giveTool(player);
+            return this.giveTool(player);
         }
-        return;
+        return false;
     }
 
-    protected giveTool(player: Player): void {
+    protected giveTool(player: Player): boolean {
         this.instance.Handle.Anchored = false;
         this.instance.Handle.CanCollide = false;
 
@@ -72,7 +72,10 @@ export abstract class AbstractToolBaseComponent<A extends IToolAttributes, I ext
             }
 
             this.instance.Parent = player.Character;
+            return true;
         }
+
+        return false;
     }
 
     protected setStackable(stackable: boolean) {
@@ -85,5 +88,9 @@ export abstract class AbstractToolBaseComponent<A extends IToolAttributes, I ext
 
     protected onUnequip(): void {
         this.logger.Info(`${this.instance} unequipped.`);
+    }
+
+    protected onActivated(player: Player): void {
+        this.logger.Info(`${this.instance} activated.`);
     }
 }
