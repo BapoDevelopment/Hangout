@@ -4,8 +4,9 @@ import { Logger } from "@rbxts/log";
 import { AbstractToolBaseComponent, IToolAttributes, IToolComponent } from "./AbstractToolBaseComponent";
 import { ToolService } from "server/services/ToolService";
 import { ServerSettings } from "server/ServerSettings";
-import { TweenService } from "@rbxts/services";
 import { Events } from "server/network";
+import { AudioService } from "server/services/AudioService";
+import { SharedSettings } from "shared/SharedSettings";
 
 interface IFlashlightComponent extends IToolComponent {
     Handle: MeshPart & {
@@ -13,12 +14,17 @@ interface IFlashlightComponent extends IToolComponent {
         ProximityPrompt: ProximityPrompt;
         WeldConstraint: WeldConstraint;
         SpotLight: SpotLight;
-        Switch: BasePart;
+        Switch: Instance & {
+            Sound: Sound;
+            On: BasePart;
+            Off: BasePart;
+        };
     };
 }
 
 interface IFlashlightAttributes extends IToolAttributes {
     Battery: number;
+    On: boolean;
 }
 
 @Component({
@@ -27,8 +33,9 @@ interface IFlashlightAttributes extends IToolAttributes {
 export class Flashlight extends AbstractToolBaseComponent<IFlashlightAttributes, IFlashlightComponent> implements OnStart{
 
     private activateConnection: RBXScriptConnection | undefined;
+    private holder: Player | undefined;
 
-    constructor(protected toolService: ToolService, protected readonly logger: Logger) {
+    constructor(protected audioService: AudioService, protected toolService: ToolService, protected readonly logger: Logger) {
         super(toolService, logger);
 
         this.instance.Handle.ProximityPrompt.Triggered.Connect((player) => {
@@ -46,6 +53,8 @@ export class Flashlight extends AbstractToolBaseComponent<IFlashlightAttributes,
         const flashlightEquipped: boolean = super.onProximityPromtActivated(player);
         if(!flashlightEquipped) { return false; }
 
+        this.holder = player;
+
         this.activateConnection = Events.items.flashlight.clickedEvent.connect((player) => {
             this.logger.Info("recieved flashlgiht click");
             this.onActivated(player);
@@ -56,7 +65,66 @@ export class Flashlight extends AbstractToolBaseComponent<IFlashlightAttributes,
 
     protected onActivated(player: Player): void {
         if(!player) { return; }
-        this.instance.Handle.SpotLight.Enabled = !this.instance.Handle.SpotLight.Enabled;
+
+        if(!this.attributes.On) {
+            this.turnOn(player);
+        } else {
+            this.turnOff(player);
+        }
+    }
+
+    protected onUnequip(): void {
+        if(this.holder) {
+            this.turnOff(this.holder);
+        }
+    }
+
+    private turnOn(player: Player): void {
+        this.attributes.On = true;
+        this.instance.Handle.SpotLight.Enabled = true;
+        this.instance.Handle.Switch.On.Transparency = 0;
+        this.instance.Handle.Switch.Off.Transparency = 1;        
+        this.audioService.playSound(this.instance.Handle.Switch.Sound);
+        
+        this.animate(player, SharedSettings.ANIMATIONS.ITEMS.FLASHLIGHT.ON);
+    }
+
+    private turnOff(player: Player): void {
+        this.attributes.On = false;
+        this.instance.Handle.SpotLight.Enabled = false;
+        this.instance.Handle.Switch.On.Transparency = 1;
+        this.instance.Handle.Switch.Off.Transparency = 0;        
+        this.audioService.playSound(this.instance.Handle.Switch.Sound);
+        
+        this.animate(player, SharedSettings.ANIMATIONS.ITEMS.FLASHLIGHT.OFF);
+    }
+
+    private animate(player: Player, animationId: string): RBXScriptSignal | undefined {
+        if(!player) { return; }
+        if(!player.Character) { return; }
+        
+        const humanoid: Humanoid | undefined = player.Character.WaitForChild("Humanoid") as Humanoid;
+        humanoid.GetPlayingAnimationTracks().forEach(track => {
+            track.Stop();
+        });
+        
+        let animation: Animation = new Instance("Animation");
+        animation.AnimationId = animationId;
+                
+        const animator: Animator | undefined = humanoid.WaitForChild("Animator") as Animator;
+        if(!animator) { return; }
+
+        const animationTrack: AnimationTrack = animator.LoadAnimation(animation);
+
+        animationTrack.Play();
+
+        animationTrack.KeyframeReached.Connect((keyframeName) => {
+            if(keyframeName === "Pause") {
+                animationTrack.AdjustSpeed(0);
+            }
+        });
+
+        return animationTrack.Stopped;
     }
 
     destroy(): void {

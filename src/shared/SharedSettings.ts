@@ -16,5 +16,12 @@ export const SharedSettings = {
                 FRONT: "rbxassetid://99556684227432",
             },
         },
+        ITEMS: {
+            FLASHLIGHT: {
+                ON: "rbxassetid://107227467377996",
+                OFF: "rbxassetid://84355542168344",
+                IDLE: "rbxassetid://80863863865003",
+            }
+        }
     },
 };

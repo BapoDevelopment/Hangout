@@ -11,7 +11,11 @@ interface IFlashlightComponent extends Tool {
         ProximityPrompt: ProximityPrompt;
         WeldConstraint: WeldConstraint;
         SpotLight: SpotLight;
-        Switch: BasePart;
+        Switch: Instance & {
+            Sound: Sound;
+            On: BasePart;
+            Off: BasePart;
+        };
     };
 }
 
