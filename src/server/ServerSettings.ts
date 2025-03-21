@@ -32,4 +32,9 @@ export const ServerSettings = {
             STACKABLE: false,
         },
     },
+    RATE_LIMITS: {
+        FLASHLIGHT: {
+            UN_EQUIP: 0.3,
+        },
+    },
 };
