@@ -45,6 +45,15 @@ declare global {
                     SpotLight: SpotLight;
                 };
             };
+            Vitamins: Tool & {
+                Handle: MeshPart & {
+                    ProximityPromtPosition: Attachment;
+                    ProximityPrompt: ProximityPrompt;
+                    WeldConstraint: WeldConstraint;
+                    Lid: MeshPart;
+                    Use: Sound;
+                };
+            }
         }
     }
 }

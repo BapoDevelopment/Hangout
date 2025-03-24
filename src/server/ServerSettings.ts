@@ -4,6 +4,7 @@ export const ServerSettings = {
         TOTAL_ROOMS: 100,
         MAX_ACTIVE_ROOMS: 10,
         LAST_ROOM: 100,
+        DEFAULT_WALKSPEED: 16,
     },
     ROOMS: {
         DOOR_LOCKED_PROBABILITY: 0,
@@ -33,7 +34,11 @@ export const ServerSettings = {
             BATTERY_DRAIN_PER_MILLISECOND: 0.01,
         },
         VITAMINS: {
+            SPAWN_RATE_IN_PERCENT: 100,
             STACKABLE: 3,
+            ADDED_WALKSPEED: 60,
+            DURATION: 8,
+            PAUSE: 3,
         }
     },
     RATE_LIMITS: {

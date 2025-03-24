@@ -4,7 +4,7 @@ import { ServerSettings } from "./ServerSettings";
 
 const rateLimits = new Map<Player, { count: number; lastReset: number }>();
 
-function randomChanceMiddleware<I extends Array<unknown>>(chances: number): Networking.EventMiddleware<I> {
+function rateLimiter<I extends Array<unknown>>(): Networking.EventMiddleware<I> {
 
 	return (processNext, event) => {
 		print("Loaded middleware for", event.name);
@@ -36,7 +36,7 @@ export const Events = GlobalEvents.createServer({
 	middleware: {
 		items: {
             flashlight: {
-                clickedEvent: [randomChanceMiddleware(50)],
+                clickedEvent: [rateLimiter()],
             },
         },
 	}

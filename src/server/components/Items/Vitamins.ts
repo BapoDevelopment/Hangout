@@ -6,26 +6,26 @@ import { ToolService } from "server/services/ToolService";
 import { ServerSettings } from "server/ServerSettings";
 import { Events } from "server/network";
 import { AudioService } from "server/services/AudioService";
-import { SharedSettings } from "shared/SharedSettings";
 
 interface IVitaminsComponent extends IToolComponent {
     Handle: MeshPart & {
         ProximityPromtPosition: Attachment;
         ProximityPrompt: ProximityPrompt;
         WeldConstraint: WeldConstraint;
-        SpotLight: SpotLight;
-        Switch: Instance & {
-            Sound: Sound;
-            On: BasePart;
-            Off: BasePart;
-        };
+        Lid: MeshPart;
+        Use: Sound;
     };
 }
 
-interface IVitaminsAttributes extends IToolAttributes {}
+interface IVitaminsAttributes extends IToolAttributes {
+    stack: number;
+}
 
 @Component({
     tag: "Vitamins",
+    defaults: {
+        stack: 1,
+    }
 })
 export class Vitamins extends AbstractToolBaseComponent<IVitaminsAttributes, IVitaminsComponent> implements OnStart{
 
@@ -34,6 +34,11 @@ export class Vitamins extends AbstractToolBaseComponent<IVitaminsAttributes, IVi
     constructor(protected audioService: AudioService, protected toolService: ToolService, protected readonly logger: Logger) {
         super(toolService, logger);
 
+        this.instance.Handle.ProximityPrompt.Triggered.Connect((player) => {
+            this.onProximityPromtActivated(player);
+        });
+
+
         this.setStackable(ServerSettings.ITEMS.VITAMINS.STACKABLE);
     }
     
@@ -41,39 +46,112 @@ export class Vitamins extends AbstractToolBaseComponent<IVitaminsAttributes, IVi
 
     }
 
+    protected onProximityPromtActivated(player: Player): boolean {
+        if(this.getVitaminsTool(player) !== undefined) {
+            const currentStack: number = this.getPlayerVitamins(player);
+            if(currentStack < ServerSettings.ITEMS.VITAMINS.STACKABLE) {
+                this.updateStack(player);
+                this.destroy();                
+            }
+            return false;
+        }
+        const vitaminsEquipped: boolean = super.onProximityPromtActivated(player);
+        if(!vitaminsEquipped) { return false; }
 
+        this.activateConnection = Events.items.vitamins.clickedEvent.connect((player) => {
+            this.onActivated(player);
+        });
+
+        return vitaminsEquipped;
+    }
+   
     protected onActivated(player: Player): void {
         if(!player) { return; }
+        if(!player.Character) { return; }
+        if(player.Character.GetAttribute("VitaminsActivated") === true) {
+            return;
+        }
 
+        const lastActivationTimeValue: AttributeValue | undefined = player.Character.GetAttribute("LastVitaminsActivated");
+        if(lastActivationTimeValue !== undefined) {
+            const lastActivationTime: number | undefined = tonumber(lastActivationTimeValue);
+            if(!(lastActivationTime && os.time() - lastActivationTime > ServerSettings.ITEMS.VITAMINS.PAUSE)) {
+                return;
+            }
+        }
+        player.Character.SetAttribute("VitaminsActivated", true);
+
+        const use: Sound = this.instance.Handle.Use;
+        this.instance.Handle.Use.Parent = player.Character;
+        this.audioService.playSoundWithCallback(use, () => {
+            use.Destroy();
+        });
+
+        task.spawn(() => {
+            if(!player) { return; }
+            if(!player.Character) { return; }
+            const humanoid: Humanoid | undefined = player.Character.WaitForChild("Humanoid") as Humanoid;
+            const pervWalkspeed = humanoid.WalkSpeed;
+            humanoid.WalkSpeed += ServerSettings.ITEMS.VITAMINS.ADDED_WALKSPEED;
+            wait(ServerSettings.ITEMS.VITAMINS.DURATION);
+            if(humanoid) {
+                humanoid.WalkSpeed = pervWalkspeed;
+                if(player.Character) {
+                    player.Character.SetAttribute("VitaminsActivated", false);
+                    player.Character.SetAttribute("LastVitaminsActivated", os.time());
+                }
+            }
+        })
+
+        this.attributes.stack -= 1;
+        if(this.attributes.stack <= 0) {
+            this.destroy();
+        }
     }
 
+    private getPlayerVitamins(player: Player): number {
+        if(!player) { return 0; }
+        if(!player.Character) { return 0; }
 
-    private animate(player: Player, animationId: string): RBXScriptSignal | undefined {
+        let vitaminsTool: Tool | undefined = this.getVitaminsTool(player);
+        if(!vitaminsTool) { return 0;}
+
+        const currentStackValue: AttributeValue | undefined = vitaminsTool.GetAttribute("stack");
+        if(!currentStackValue) { return 0; }
+        const currentStack: number | undefined = tonumber(currentStackValue);
+        if(currentStack) {
+            return currentStack ? currentStack : 0;
+        }
+        return 0;
+    }
+
+    private updateStack(player: Player): void {
         if(!player) { return; }
         if(!player.Character) { return; }
-        
-        const humanoid: Humanoid | undefined = player.Character.WaitForChild("Humanoid") as Humanoid;
-        humanoid.GetPlayingAnimationTracks().forEach(track => {
-            track.Stop();
-        });
-        
-        let animation: Animation = new Instance("Animation");
-        animation.AnimationId = animationId;
-                
-        const animator: Animator | undefined = humanoid.WaitForChild("Animator") as Animator;
-        if(!animator) { return; }
 
-        const animationTrack: AnimationTrack = animator.LoadAnimation(animation);
+        const vitaminsTool: Tool | undefined = this.getVitaminsTool(player);
+        if(!vitaminsTool) { return; }
 
-        animationTrack.Play();
+        const currentStackValue: AttributeValue | undefined = vitaminsTool.GetAttribute("stack");
+        if(!currentStackValue) { return; }
+        const currentStack: number | undefined = tonumber(currentStackValue);
+        if(currentStack) {
+            vitaminsTool.SetAttribute("stack", currentStack + 1);
+        }
+    }
 
-        animationTrack.KeyframeReached.Connect((keyframeName) => {
-            if(keyframeName === "Pause") {
-                animationTrack.AdjustSpeed(0);
-            }
-        });
+    private getVitaminsTool(player: Player): Tool | undefined{
+        if(!player) { return undefined; }
+        if(!player.Character) { return undefined; }
 
-        return animationTrack.Stopped;
+        let vitaminsTool: Tool | undefined = player.Character.FindFirstChild("Vitamins") as Tool;
+        if(!vitaminsTool) {
+            const backpack = player.FindFirstChildOfClass("Backpack");
+            if(!backpack) { return undefined; }
+            vitaminsTool = backpack.GetChildren().filter((child): child is Tool => child.IsA("Tool") && child.Name === "Vitamins")[0];
+            return vitaminsTool;
+        }
+        return vitaminsTool;
     }
 
     destroy(): void {
@@ -81,5 +159,6 @@ export class Vitamins extends AbstractToolBaseComponent<IVitaminsAttributes, IVi
         if(this.activateConnection) {
             this.activateConnection.Disconnect();
         }
+        this.instance.Destroy();
     }
 }

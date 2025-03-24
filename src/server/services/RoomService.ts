@@ -9,6 +9,7 @@ import { Wardrobe } from "server/components/Furniture/HidingSpots/Wardrobe";
 import { Drawer } from "server/components/Furniture/ItemSlots/Drawer";
 import { Slot } from "server/components/Furniture/ItemSlots/Slot";
 import { Flashlight } from "server/components/Items/Flashlight";
+import { Vitamins } from "server/components/Items/Vitamins";
 import { AccentLamp } from "server/components/Lamp/AccentLamp";
 import { Room } from "server/components/Room/Room";
 import { ServerSettings } from "server/ServerSettings";
@@ -124,6 +125,25 @@ export class RoomService {
                 }
             })
             components.addComponent<Flashlight>(newFlashlight);
+        }
+
+        if(math.random() * 100 <= ServerSettings.ITEMS.VITAMINS.SPAWN_RATE_IN_PERCENT) {
+            const newVitamins = ServerStorage.Tools.Vitamins.Clone();
+            components.onComponentAdded<Vitamins>((vitamins) => {
+                if(vitamins.instance === newVitamins) {
+                    freeSlots = randomDrawer.getFreeSlots();
+                    if(freeSlots.size() === 0) {
+                        vitamins.destroy();
+                        this.logger.Warn("There should be free item slots, but there are none.");
+                        return;
+                    }
+                    const randomSlot: Slot = freeSlots[math.random(0, freeSlots.size() -1)];
+                    randomSlot.setItem(vitamins);
+                    vitamins.activateProximityPromt();
+                    vitamins.weldOnTo(randomSlot.instance);
+                }
+            })
+            components.addComponent<Vitamins>(newVitamins);
         }
     }
 }
