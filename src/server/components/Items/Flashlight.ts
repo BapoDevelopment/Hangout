@@ -6,7 +6,6 @@ import { ToolService } from "server/services/ToolService";
 import { ServerSettings } from "server/ServerSettings";
 import { Events } from "server/network";
 import { AudioService } from "server/services/AudioService";
-import { SharedSettings } from "shared/SharedSettings";
 
 interface IFlashlightComponent extends IToolComponent {
     Handle: MeshPart & {

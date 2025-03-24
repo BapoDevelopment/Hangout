@@ -16,7 +16,7 @@ export interface IToolAttributes {}
 @Component()
 export abstract class AbstractToolBaseComponent<A extends IToolAttributes, I extends IToolComponent> extends BaseComponent<A, I> implements OnStart {
 
-    private stackable: boolean = false;
+    private stackable: number = 0;
 
     constructor(protected toolService: ToolService, protected readonly logger: Logger) {
         super();
@@ -48,7 +48,7 @@ export abstract class AbstractToolBaseComponent<A extends IToolAttributes, I ext
     }
 
     public isStackable(): boolean {
-        return this.stackable;
+        return this.stackable > 0;
     }
 
     protected onProximityPromtActivated(player: Player): boolean {
@@ -78,7 +78,7 @@ export abstract class AbstractToolBaseComponent<A extends IToolAttributes, I ext
         return false;
     }
 
-    protected setStackable(stackable: boolean) {
+    protected setStackable(stackable: number) {
         this.stackable = stackable;
     }
 

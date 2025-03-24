@@ -6,7 +6,7 @@ export const ServerSettings = {
         LAST_ROOM: 100,
     },
     ROOMS: {
-        DOOR_LOCKED_PROBABILITY: 100,
+        DOOR_LOCKED_PROBABILITY: 0,
     },
     ENTITIES: {
         VOID: {
@@ -25,13 +25,16 @@ export const ServerSettings = {
     },
     ITEMS: {
         KEY: {
-            STACKABLE: false,
+            STACKABLE: 0,
         },
         FLASHLIGHT: {
             SPAWN_RATE_IN_PERCENT: 100,
-            STACKABLE: false,
+            STACKABLE: 0,
             BATTERY_DRAIN_PER_MILLISECOND: 0.01,
         },
+        VITAMINS: {
+            STACKABLE: 3,
+        }
     },
     RATE_LIMITS: {
         FLASHLIGHT: {
