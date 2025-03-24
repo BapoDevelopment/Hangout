@@ -86,7 +86,7 @@ export class Flashlight extends AbstractToolBaseComponent<IFlashlightAttributes,
         this.instance.Handle.Switch.Off.Transparency = 1;        
         this.audioService.playSound(this.instance.Handle.Switch.Sound);
         
-        this.animate(player, SharedSettings.ANIMATIONS.ITEMS.FLASHLIGHT.ON);
+        //this.animate(player, SharedSettings.ANIMATIONS.ITEMS.FLASHLIGHT.ON);
     }
 
     private turnOff(player: Player): void {
@@ -96,7 +96,7 @@ export class Flashlight extends AbstractToolBaseComponent<IFlashlightAttributes,
         this.instance.Handle.Switch.Off.Transparency = 0;        
         this.audioService.playSound(this.instance.Handle.Switch.Sound);
         
-        this.animate(player, SharedSettings.ANIMATIONS.ITEMS.FLASHLIGHT.OFF);
+        //this.animate(player, SharedSettings.ANIMATIONS.ITEMS.FLASHLIGHT.OFF);
     }
 
     private animate(player: Player, animationId: string): RBXScriptSignal | undefined {
@@ -105,6 +105,7 @@ export class Flashlight extends AbstractToolBaseComponent<IFlashlightAttributes,
         
         const humanoid: Humanoid | undefined = player.Character.WaitForChild("Humanoid") as Humanoid;
         humanoid.GetPlayingAnimationTracks().forEach(track => {
+            this.logger.Info("test");
             track.Stop();
         });
         
