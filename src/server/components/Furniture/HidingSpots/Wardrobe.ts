@@ -74,7 +74,14 @@ export class Wardrobe extends HidingSpot <{}, IWardrobeComponent> implements OnS
         const humanoid: Humanoid | undefined = player.Character.FindFirstChild("Humanoid") as Humanoid;
         if(humanoid) {
             humanoid.WalkSpeed = 0;
+            humanoid.AutoRotate = false;
         }
+
+        const humanoidRootPart: Part | undefined = player.Character.FindFirstChild("HumanoidRootPart") as Part;
+        if(humanoidRootPart) {
+            humanoidRootPart.Anchored = true;
+        }
+
         Events.layDown(player);
 
         this.openWardrobe();
@@ -141,6 +148,11 @@ export class Wardrobe extends HidingSpot <{}, IWardrobeComponent> implements OnS
                 const humanoid: Humanoid | undefined = player.Character.FindFirstChild("Humanoid") as Humanoid;
                 if(humanoid) {
                     humanoid.WalkSpeed = 96;
+                    humanoid.AutoRotate = true;
+                }
+                const humanoidRootPart: Part | undefined = player.Character.FindFirstChild("HumanoidRootPart") as Part;
+                if(humanoidRootPart) {
+                    humanoidRootPart.Anchored = false;
                 }
             }
         });

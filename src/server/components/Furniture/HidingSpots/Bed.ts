@@ -69,6 +69,7 @@ export class Bed extends HidingSpot <{}, IBedComponent> implements OnStart {
         const humanoid: Humanoid | undefined = player.Character.FindFirstChild("Humanoid") as Humanoid;
         if(humanoid) {
             humanoid.WalkSpeed = 0;
+            humanoid.AutoRotate = false;
         }
         
         //Play crouch Sound
@@ -78,6 +79,7 @@ export class Bed extends HidingSpot <{}, IBedComponent> implements OnStart {
         if(!humanoidRootPart) {
             return;
         }
+        humanoidRootPart.Anchored = true;
         
         //Move Player
         let nearestEntrance: BasePart | undefined = this.getNearestEntrance(this.instance.Markers.Entrance, player.Character);
@@ -122,6 +124,11 @@ export class Bed extends HidingSpot <{}, IBedComponent> implements OnStart {
                     this.collisionGroupService.setCollisionGroup(player.Character, "Character");
                 }
             })
+        }
+
+        const humanoid: Humanoid | undefined = player.Character.FindFirstChild("Humanoid") as Humanoid;
+        if(humanoid) {
+            humanoid.AutoRotate = true;
         }
 
         humanoidRootPart.Anchored = false;
