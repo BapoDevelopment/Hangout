@@ -80,12 +80,15 @@ export class Flashlight extends AbstractToolBaseComponent<IFlashlightAttributes,
     }
 
     private turnOn(player: Player): void {
+        if(this.attributes.Battery <= 0) { return; }
+
         this.attributes.On = true;
         this.instance.Handle.SpotLight.Enabled = true;
         this.instance.Handle.Switch.On.Transparency = 0;
         this.instance.Handle.Switch.Off.Transparency = 1;        
         this.audioService.playSound(this.instance.Handle.Switch.Sound);
-        
+        this.drainBattery(player);
+
         //this.animate(player, SharedSettings.ANIMATIONS.ITEMS.FLASHLIGHT.ON);
     }
 
@@ -95,8 +98,22 @@ export class Flashlight extends AbstractToolBaseComponent<IFlashlightAttributes,
         this.instance.Handle.Switch.On.Transparency = 1;
         this.instance.Handle.Switch.Off.Transparency = 0;        
         this.audioService.playSound(this.instance.Handle.Switch.Sound);
-        
+
         //this.animate(player, SharedSettings.ANIMATIONS.ITEMS.FLASHLIGHT.OFF);
+    }
+
+    private drainBattery(player: Player): void {
+        task.spawn(() => {
+            while (this.attributes.On && this.attributes.Battery > 0) {
+                this.attributes.Battery -= ServerSettings.ITEMS.FLASHLIGHT.BATTERY_DRAIN_PER_MILLISECOND;
+                if (this.attributes.Battery <= 0) {
+                    this.attributes.Battery = 0;
+                    this.turnOff(player);
+                    break;
+                }
+                task.wait(0.001); // 0.001 =^ 1 Millisecond
+            }
+        });
     }
 
     private animate(player: Player, animationId: string): RBXScriptSignal | undefined {
@@ -105,7 +122,6 @@ export class Flashlight extends AbstractToolBaseComponent<IFlashlightAttributes,
         
         const humanoid: Humanoid | undefined = player.Character.WaitForChild("Humanoid") as Humanoid;
         humanoid.GetPlayingAnimationTracks().forEach(track => {
-            this.logger.Info("test");
             track.Stop();
         });
         

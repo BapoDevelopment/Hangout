@@ -30,6 +30,7 @@ export const ServerSettings = {
         FLASHLIGHT: {
             SPAWN_RATE_IN_PERCENT: 100,
             STACKABLE: false,
+            BATTERY_DRAIN_PER_MILLISECOND: 0.01,
         },
     },
     RATE_LIMITS: {
