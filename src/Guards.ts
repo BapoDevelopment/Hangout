@@ -45,6 +45,21 @@ declare global {
                     SpotLight: SpotLight;
                 };
             };
+            Lighter: Tool & {
+                Handle: MeshPart & {
+                    ProximityPromtPosition: Attachment;
+                    ProximityPrompt: ProximityPrompt;
+                    WeldConstraint: WeldConstraint;
+                    Switch: Instance & {
+                        Sound: Sound;
+                        On: BasePart;
+                        Off: BasePart;
+                    };
+                    Fire: BasePart & {
+                        PointLight: PointLight;
+                    };
+                };
+            };
             Vitamins: Tool & {
                 Handle: MeshPart & {
                     ProximityPromtPosition: Attachment;

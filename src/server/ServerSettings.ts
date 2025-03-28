@@ -33,6 +33,11 @@ export const ServerSettings = {
             STACKABLE: 0,
             BATTERY_DRAIN_PER_MILLISECOND: 0.01,
         },
+        LIGHTER: {
+            SPAWN_RATE_IN_PERCENT: 100,
+            STACKABLE: 0,
+            GAS_DRAIN_PER_MILLISECOND: 0.01,
+        },
         VITAMINS: {
             SPAWN_RATE_IN_PERCENT: 100,
             STACKABLE: 3,

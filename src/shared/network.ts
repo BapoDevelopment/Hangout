@@ -7,6 +7,9 @@ interface ClientToServerEvents {
         flashlight: {
             clickedEvent(): void;
         },
+        lighter: {
+            clickedEvent(): void;
+        },
         vitamins: {
             clickedEvent(): void;
         }
