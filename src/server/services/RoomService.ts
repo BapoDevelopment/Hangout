@@ -8,6 +8,7 @@ import { Bed } from "server/components/Furniture/HidingSpots/Bed";
 import { Wardrobe } from "server/components/Furniture/HidingSpots/Wardrobe";
 import { Drawer } from "server/components/Furniture/ItemSlots/Drawer";
 import { Slot } from "server/components/Furniture/ItemSlots/Slot";
+import { Battery } from "server/components/Items/Battery";
 import { Flashlight } from "server/components/Items/Flashlight";
 import { Lighter } from "server/components/Items/Lighter";
 import { Vitamins } from "server/components/Items/Vitamins";
@@ -126,6 +127,25 @@ export class RoomService {
                 }
             })
             components.addComponent<Flashlight>(newFlashlight);
+        }
+        if(math.random() * 100 <= ServerSettings.ITEMS.BATTERY.SPAWN_RATE_IN_PERCENT) {
+
+            const newBattery = ServerStorage.Tools.Battery.Clone();
+            components.onComponentAdded<Battery>((battery) => {
+                if(battery.instance === newBattery) {
+                    freeSlots = randomDrawer.getFreeSlots();
+                    if(freeSlots.size() === 0) {
+                        battery.destroy();
+                        this.logger.Warn("There should be free item slots, but there are none.");
+                        return;
+                    }
+                    const randomSlot: Slot = freeSlots[math.random(0, freeSlots.size() -1)];
+                    randomSlot.setItem(battery);
+                    battery.activateProximityPromt();
+                    battery.weldOnTo(randomSlot.instance);
+                }
+            })
+            components.addComponent<Battery>(newBattery);
         }
         if(math.random() * 100 <= ServerSettings.ITEMS.LIGHTER.SPAWN_RATE_IN_PERCENT) {
 

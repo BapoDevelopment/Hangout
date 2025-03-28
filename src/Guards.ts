@@ -45,6 +45,13 @@ declare global {
                     SpotLight: SpotLight;
                 };
             };
+            Battery: Tool & {
+                Handle: MeshPart & {
+                    ProximityPromtPosition: Attachment;
+                    ProximityPrompt: ProximityPrompt;
+                    WeldConstraint: WeldConstraint;
+                }
+            };
             Lighter: Tool & {
                 Handle: MeshPart & {
                     ProximityPromtPosition: Attachment;

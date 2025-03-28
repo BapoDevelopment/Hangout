@@ -32,6 +32,11 @@ export const ServerSettings = {
             SPAWN_RATE_IN_PERCENT: 100,
             STACKABLE: 0,
             BATTERY_DRAIN_PER_MILLISECOND: 0.01,
+            MAX_BATTERY: 10,
+        },
+        BATTERY: {
+            SPAWN_RATE_IN_PERCENT: 100,
+            STACKABLE: 0,
         },
         LIGHTER: {
             SPAWN_RATE_IN_PERCENT: 100,
