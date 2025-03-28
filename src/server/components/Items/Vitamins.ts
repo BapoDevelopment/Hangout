@@ -47,7 +47,7 @@ export class Vitamins extends AbstractToolBaseComponent<IVitaminsAttributes, IVi
     }
 
     protected onProximityPromtActivated(player: Player): boolean {
-        if(this.getVitaminsTool(player) !== undefined) {
+        if(super.getPlayerTool(player, "Vitamins") !== undefined) {
             const currentStack: number = this.getPlayerVitamins(player);
             if(currentStack < ServerSettings.ITEMS.VITAMINS.STACKABLE) {
                 this.updateStack(player);
@@ -113,7 +113,7 @@ export class Vitamins extends AbstractToolBaseComponent<IVitaminsAttributes, IVi
         if(!player) { return 0; }
         if(!player.Character) { return 0; }
 
-        let vitaminsTool: Tool | undefined = this.getVitaminsTool(player);
+        let vitaminsTool: Tool | undefined = super.getPlayerTool(player, "Vitamins");
         if(!vitaminsTool) { return 0;}
 
         const currentStackValue: AttributeValue | undefined = vitaminsTool.GetAttribute("stack");
@@ -129,7 +129,7 @@ export class Vitamins extends AbstractToolBaseComponent<IVitaminsAttributes, IVi
         if(!player) { return; }
         if(!player.Character) { return; }
 
-        const vitaminsTool: Tool | undefined = this.getVitaminsTool(player);
+        const vitaminsTool: Tool | undefined = super.getPlayerTool(player, "Vitamins");
         if(!vitaminsTool) { return; }
 
         const currentStackValue: AttributeValue | undefined = vitaminsTool.GetAttribute("stack");
@@ -138,20 +138,6 @@ export class Vitamins extends AbstractToolBaseComponent<IVitaminsAttributes, IVi
         if(currentStack) {
             vitaminsTool.SetAttribute("stack", currentStack + 1);
         }
-    }
-
-    private getVitaminsTool(player: Player): Tool | undefined{
-        if(!player) { return undefined; }
-        if(!player.Character) { return undefined; }
-
-        let vitaminsTool: Tool | undefined = player.Character.FindFirstChild("Vitamins") as Tool;
-        if(!vitaminsTool) {
-            const backpack = player.FindFirstChildOfClass("Backpack");
-            if(!backpack) { return undefined; }
-            vitaminsTool = backpack.GetChildren().filter((child): child is Tool => child.IsA("Tool") && child.Name === "Vitamins")[0];
-            return vitaminsTool;
-        }
-        return vitaminsTool;
     }
 
     destroy(): void {

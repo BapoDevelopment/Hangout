@@ -52,11 +52,19 @@ export class Lighter extends AbstractToolBaseComponent<ILighterAttributes, ILigh
     }
 
     protected onProximityPromtActivated(player: Player): boolean {
+        const lighterTool: Tool | undefined = super.getPlayerTool(player, "Lighter");
+        if(lighterTool !== undefined) {
+            const gas: number = lighterTool.GetAttribute("Gas") as number;
+            lighterTool.SetAttribute("Gas",  gas + this.attributes.Gas);
+            this.destroy();
+            return false;
+        }
+
         const lighterEquipped: boolean = super.onProximityPromtActivated(player);
         if(!lighterEquipped) { return false; }
 
         this.holder = player;
-        
+
         this.activateConnection = Events.items.lighter.clickedEvent.connect((player) => {
             this.onActivated(player);
         });

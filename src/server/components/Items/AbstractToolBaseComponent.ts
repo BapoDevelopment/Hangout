@@ -78,6 +78,20 @@ export abstract class AbstractToolBaseComponent<A extends IToolAttributes, I ext
         return false;
     }
 
+    protected getPlayerTool(player: Player, name: string): Tool | undefined{
+        if(!player) { return undefined; }
+        if(!player.Character) { return undefined; }
+
+        let tool: Tool | undefined = player.Character.FindFirstChild(name) as Tool;
+        if(!tool) {
+            const backpack = player.FindFirstChildOfClass("Backpack");
+            if(!backpack) { return undefined; }
+            tool = backpack.GetChildren().filter((child): child is Tool => child.IsA("Tool") && child.Name === name)[0];
+            return tool;
+        }
+        return tool;
+    }
+
     protected setStackable(stackable: number) {
         this.stackable = stackable;
     }
