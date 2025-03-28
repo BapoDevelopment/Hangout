@@ -75,7 +75,14 @@ declare global {
                     Lid: MeshPart;
                     Use: Sound;
                 };
-            }
+            };
+            Lockpick: Tool & {
+                Handle: MeshPart & {
+                    ProximityPromtPosition: Attachment;
+                    ProximityPrompt: ProximityPrompt;
+                    WeldConstraint: WeldConstraint;
+                }
+            };
         }
     }
 }

@@ -11,6 +11,7 @@ import { Slot } from "server/components/Furniture/ItemSlots/Slot";
 import { Battery } from "server/components/Items/Battery";
 import { Flashlight } from "server/components/Items/Flashlight";
 import { Lighter } from "server/components/Items/Lighter";
+import { Lockpick } from "server/components/Items/Lockpick";
 import { Vitamins } from "server/components/Items/Vitamins";
 import { AccentLamp } from "server/components/Lamp/AccentLamp";
 import { Room } from "server/components/Room/Room";
@@ -109,6 +110,25 @@ export class RoomService {
         if(freeSlots.size() === 0) { return; }
         
         const components = Dependency<Components>();
+        if(math.random() * 100 <= ServerSettings.ITEMS.LOCKPICK.SPAWN_RATE_IN_PERCENT) {
+
+            const newLockpick = ServerStorage.Tools.Lockpick.Clone();
+            components.onComponentAdded<Lockpick>((lockpick) => {
+                if(lockpick.instance === newLockpick) {
+                    freeSlots = randomDrawer.getFreeSlots();
+                    if(freeSlots.size() === 0) {
+                        lockpick.destroy();
+                        this.logger.Warn("There should be free item slots, but there are none.");
+                        return;
+                    }
+                    const randomSlot: Slot = freeSlots[math.random(0, freeSlots.size() -1)];
+                    randomSlot.setItem(lockpick);
+                    lockpick.activateProximityPromt();
+                    lockpick.weldOnTo(randomSlot.instance);
+                }
+            })
+            components.addComponent<Lockpick>(newLockpick);
+        }
         if(math.random() * 100 <= ServerSettings.ITEMS.FLASHLIGHT.SPAWN_RATE_IN_PERCENT) {
 
             const newFlashlight = ServerStorage.Tools.Flashlight.Clone();

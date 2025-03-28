@@ -54,13 +54,19 @@ export class LockedDoor extends SuperDoor<IDoorAttributes, ILockedDoorComponent>
 
         promt.Triggered.Connect((player) => {
             const key: Tool | undefined = player.Character?.FindFirstChild("Key") as Tool;
-            if(!key) { return; }
-
-            const keyNumber = key.GetAttribute("Door") as Number;
-            if(keyNumber === this.attributes.Number) {
+            const lockpick: Tool | undefined = player.Character?.FindFirstChild("Lockpick") as Tool;
+            if(key) {
+                const keyNumber = key.GetAttribute("Door") as Number;
+                if(keyNumber === this.attributes.Number) {
+                    promt.Destroy();
+                    this.instance.Build.Leaf.Leaf.WeldConstraint.Destroy();
+                    key.Destroy();
+                    super.openByPlayer(player);
+                }
+            } else if(lockpick) {
                 promt.Destroy();
                 this.instance.Build.Leaf.Leaf.WeldConstraint.Destroy();
-                key.Destroy();
+                lockpick.Destroy();
                 super.openByPlayer(player);
             }
         });

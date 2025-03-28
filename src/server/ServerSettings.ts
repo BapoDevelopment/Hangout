@@ -29,17 +29,17 @@ export const ServerSettings = {
             STACKABLE: 0,
         },
         FLASHLIGHT: {
-            SPAWN_RATE_IN_PERCENT: 100,
+            SPAWN_RATE_IN_PERCENT: 0,
             STACKABLE: 0,
             BATTERY_DRAIN_PER_MILLISECOND: 0.01,
             MAX_BATTERY: 10,
         },
         BATTERY: {
-            SPAWN_RATE_IN_PERCENT: 100,
+            SPAWN_RATE_IN_PERCENT: 0,
             STACKABLE: 0,
         },
         LIGHTER: {
-            SPAWN_RATE_IN_PERCENT: 100,
+            SPAWN_RATE_IN_PERCENT: 0,
             STACKABLE: 0,
             GAS_DRAIN_PER_MILLISECOND: 0.01,
         },
@@ -49,6 +49,10 @@ export const ServerSettings = {
             ADDED_WALKSPEED: 60,
             DURATION: 8,
             PAUSE: 3,
+        },
+        LOCKPICK: {
+            SPAWN_RATE_IN_PERCENT: 0,
+            STACKABLE: 3,
         }
     },
     RATE_LIMITS: {

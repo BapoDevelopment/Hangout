@@ -5,16 +5,20 @@ import { AbstractToolBaseComponent, IToolAttributes, IToolComponent } from "./Ab
 import { ToolService } from "server/services/ToolService";
 import { ServerSettings } from "server/ServerSettings";
 
-interface IKeyComponent extends IToolComponent {}
-
-interface IKeyAttributes extends IToolAttributes {
-    Door: number;
+interface ILockpickComponent extends IToolComponent {
+    Handle: MeshPart & {
+        ProximityPromtPosition: Attachment;
+        ProximityPrompt: ProximityPrompt;
+        WeldConstraint: WeldConstraint;
+    }
 }
 
+interface ILockpickAttributes extends IToolAttributes {}
+
 @Component({
-    tag: "Key",
+    tag: "Lockpick",
 })
-export class Key extends AbstractToolBaseComponent<IKeyAttributes, IKeyComponent> implements OnStart{
+export class Lockpick extends AbstractToolBaseComponent<ILockpickAttributes, ILockpickComponent> implements OnStart{
 
     constructor(protected toolService: ToolService, protected readonly logger: Logger) {
         super(toolService, logger);
@@ -23,19 +27,9 @@ export class Key extends AbstractToolBaseComponent<IKeyAttributes, IKeyComponent
             this.onProximityPromtActivated(player);
         });
 
-        this.setStackable(ServerSettings.ITEMS.KEY.STACKABLE);
+        this.setStackable(ServerSettings.ITEMS.LOCKPICK.STACKABLE);
     }
     
     onStart(): void {}
 
-    public setNumber(number: number): void {
-        this.attributes.Door = number;
-        this.instance.SetAttribute("Door", number);
-        this.logger.Debug(`Set key number to ${number}`);
-    }
-
-    destroy(): void {
-        super.destroy();
-        this.instance.Destroy();
-    }
 }

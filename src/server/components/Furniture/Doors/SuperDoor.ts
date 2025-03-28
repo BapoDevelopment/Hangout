@@ -1,8 +1,9 @@
 import { BaseComponent } from "@flamework/components/out/baseComponent";
-import { Component } from "@flamework/components/out/components";
-import { OnStart } from "@flamework/core/out/flamework";
+import { Component, Components } from "@flamework/components/out/components";
+import { Dependency, OnStart } from "@flamework/core/out/flamework";
 import { Logger } from "@rbxts/log/out/Logger";
 import { TweenService } from "@rbxts/services";
+import { Key } from "server/components/Items/Key";
 import { DoorState } from "server/Enum/DoorState";
 import { AudioService } from "server/services/AudioService";
 import { GameService } from "server/services/GameService";
@@ -65,6 +66,8 @@ export class SuperDoor<A extends IDoorAttributes, I extends IDoorComponent> exte
         if(this.state === DoorState.OPEN) { return; }
         this.state = DoorState.OPEN;
 
+        this.destroyKey();
+
         const tweenInfo = new TweenInfo(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.Out, 0, false, 0);
         const targetProperties = {
             CFrame: this.instance.Hinge.CFrame.mul(CFrame.Angles(0, 9, 0))
@@ -74,6 +77,16 @@ export class SuperDoor<A extends IDoorAttributes, I extends IDoorComponent> exte
         
         if(this.audioService) { this.audioService.playSound(this.instance.open); }
         if(this.gameService) { this.gameService.onDoorOpened(this.attributes.Number, openedByPlayer); }
+    }
+
+    protected destroyKey(): void {
+        const components = Dependency<Components>();
+        const keys: Key[] = components.getAllComponents<Key>();
+        keys.forEach(key => {
+            if(key.attributes.Door === this.attributes.Number) {
+                key.destroy();
+            }
+        });
     }
 
     public destroy(): void {
