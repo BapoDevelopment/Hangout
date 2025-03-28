@@ -81,10 +81,10 @@ export class Vitamins extends AbstractToolBaseComponent<IVitaminsAttributes, IVi
         }
         player.Character.SetAttribute("VitaminsActivated", true);
 
-        const use: Sound = this.instance.Handle.Use;
-        this.instance.Handle.Use.Parent = player.Character;
+        const use: Sound = this.instance.Handle.Use.Clone();
+        use.Parent = player.Character;
         this.audioService.playSoundWithCallback(use, () => {
-            use.Destroy();
+            //use.Destroy();
         });
 
         task.spawn(() => {
