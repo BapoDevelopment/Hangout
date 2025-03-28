@@ -7,7 +7,7 @@ export const ServerSettings = {
         DEFAULT_WALKSPEED: 16,
     },
     ROOMS: {
-        DOOR_LOCKED_PROBABILITY: 0,
+        DOOR_LOCKED_PROBABILITY: 100,
     },
     ENTITIES: {
         VOID: {
@@ -44,14 +44,14 @@ export const ServerSettings = {
             GAS_DRAIN_PER_MILLISECOND: 0.01,
         },
         VITAMINS: {
-            SPAWN_RATE_IN_PERCENT: 100,
+            SPAWN_RATE_IN_PERCENT: 0,
             STACKABLE: 3,
             ADDED_WALKSPEED: 60,
             DURATION: 8,
             PAUSE: 3,
         },
         LOCKPICK: {
-            SPAWN_RATE_IN_PERCENT: 0,
+            SPAWN_RATE_IN_PERCENT: 100,
             STACKABLE: 3,
         }
     },

@@ -66,7 +66,13 @@ export class LockedDoor extends SuperDoor<IDoorAttributes, ILockedDoorComponent>
             } else if(lockpick) {
                 promt.Destroy();
                 this.instance.Build.Leaf.Leaf.WeldConstraint.Destroy();
-                lockpick.Destroy();
+                let lockpicks: number = lockpick.GetAttribute("stack") as number;
+                if(lockpicks <= 1) {
+                    lockpick.Destroy();
+                } else {
+                    lockpicks--;
+                    lockpick.SetAttribute("stack", lockpicks);
+                }
                 super.openByPlayer(player);
             }
         });
