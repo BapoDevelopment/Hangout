@@ -24,4 +24,10 @@ export const SharedSettings = {
             }
         }
     },
+    ITEMS: {
+        VITAMINS: {
+            DURATION: 8,
+            FIELD_OF_VIEW: 80,
+        }
+    }
 };

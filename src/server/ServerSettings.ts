@@ -1,3 +1,5 @@
+import { SharedSettings } from "shared/SharedSettings";
+
 export const ServerSettings = {
     GAME: {
         START_ROOMS: 5,
@@ -47,7 +49,7 @@ export const ServerSettings = {
             SPAWN_RATE_IN_PERCENT: 100,
             STACKABLE: 3,
             ADDED_WALKSPEED: 60,
-            DURATION: 8,
+            DURATION: SharedSettings.ITEMS.VITAMINS.DURATION,
             PAUSE: 3,
         },
         LOCKPICK: {
