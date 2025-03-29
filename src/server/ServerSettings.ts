@@ -31,29 +31,29 @@ export const ServerSettings = {
             STACKABLE: 0,
         },
         FLASHLIGHT: {
-            SPAWN_RATE_IN_PERCENT: 0,
+            SPAWN_RATE_IN_PERCENT: 20,
             STACKABLE: 0,
             BATTERY_DRAIN_PER_MILLISECOND: 0.01,
             MAX_BATTERY: 10,
         },
         BATTERY: {
-            SPAWN_RATE_IN_PERCENT: 0,
+            SPAWN_RATE_IN_PERCENT: 20,
             STACKABLE: 0,
         },
         LIGHTER: {
-            SPAWN_RATE_IN_PERCENT: 0,
+            SPAWN_RATE_IN_PERCENT: 20,
             STACKABLE: 0,
             GAS_DRAIN_PER_MILLISECOND: 0.01,
         },
         VITAMINS: {
-            SPAWN_RATE_IN_PERCENT: 100,
+            SPAWN_RATE_IN_PERCENT: 20,
             STACKABLE: 3,
             ADDED_WALKSPEED: 60,
             DURATION: SharedSettings.ITEMS.VITAMINS.DURATION,
             PAUSE: 3,
         },
         LOCKPICK: {
-            SPAWN_RATE_IN_PERCENT: 0,
+            SPAWN_RATE_IN_PERCENT: 20,
             STACKABLE: 3,
         }
     },

@@ -30,7 +30,6 @@ export class Slot extends BaseComponent<{}, ISlotComponent> {
             this.logger.Debug("Slot already occupied ");
             return false;
         }
-        
         this.storedItem = item;
         item.instance.PivotTo(new CFrame(this.instance.ItemLocation.WorldPosition));
         item.instance.Parent = this.instance.ItemLocation;

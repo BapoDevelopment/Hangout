@@ -2,6 +2,7 @@ import { Components } from "@flamework/components/out/components";
 import { Dependency, Service } from "@flamework/core";
 import { Logger } from "@rbxts/log/out/Logger";
 import { CollectionService, ServerStorage } from "@rbxts/services";
+import { AbstractToolBaseComponent, IToolAttributes, IToolComponent } from "server/components/Items/AbstractToolBaseComponent";
 import { RegularDoor } from "server/components/Furniture/Doors/RegularDoor";
 import { IDoorAttributes, IDoorComponent, SuperDoor } from "server/components/Furniture/Doors/SuperDoor";
 import { Bed } from "server/components/Furniture/HidingSpots/Bed";
@@ -101,108 +102,92 @@ export class RoomService {
     }
 
     public addRandomItems(room: Room): void {
-        const drawers: Drawer[] = room.getDrawers();
-        if(!drawers) { return; }
-        if(drawers.size() <= 0) { return; }
+        let freeSlots: Slot[] = this.getFreeSlots(room);
         
-        const randomDrawer = drawers[math.random(0, drawers.size() - 1)];
-        let freeSlots: Slot[] = randomDrawer.getFreeSlots();
-        if(freeSlots.size() === 0) { return; }
-        
+        let cumulativeProbability: number = ServerSettings.ITEMS.FLASHLIGHT.SPAWN_RATE_IN_PERCENT
+        + ServerSettings.ITEMS.BATTERY.SPAWN_RATE_IN_PERCENT
+        + ServerSettings.ITEMS.LIGHTER.SPAWN_RATE_IN_PERCENT
+        + ServerSettings.ITEMS.VITAMINS.SPAWN_RATE_IN_PERCENT
+        + ServerSettings.ITEMS.LOCKPICK.SPAWN_RATE_IN_PERCENT;
+
         const components = Dependency<Components>();
-        if(math.random() * 100 <= ServerSettings.ITEMS.LOCKPICK.SPAWN_RATE_IN_PERCENT) {
+        freeSlots.forEach(() => {
+            if(math.random() * 10 >= 5) { return; }
+            const rand: number = math.random() * cumulativeProbability;
+            let currentProbability: number = 0;
 
-            const newLockpick = ServerStorage.Tools.Lockpick.Clone();
-            components.onComponentAdded<Lockpick>((lockpick) => {
-                if(lockpick.instance === newLockpick) {
-                    freeSlots = randomDrawer.getFreeSlots();
-                    if(freeSlots.size() === 0) {
-                        lockpick.destroy();
-                        this.logger.Warn("There should be free item slots, but there are none.");
-                        return;
-                    }
-                    const randomSlot: Slot = freeSlots[math.random(0, freeSlots.size() -1)];
-                    randomSlot.setItem(lockpick);
-                    lockpick.activateProximityPromt();
-                    lockpick.weldOnTo(randomSlot.instance);
-                }
-            })
-            components.addComponent<Lockpick>(newLockpick);
-        }
-        if(math.random() * 100 <= ServerSettings.ITEMS.FLASHLIGHT.SPAWN_RATE_IN_PERCENT) {
+            currentProbability += ServerSettings.ITEMS.FLASHLIGHT.SPAWN_RATE_IN_PERCENT;
+            if(rand <= currentProbability) {
+                const newFlashlight = ServerStorage.Tools.Flashlight.Clone();
+                components.onComponentAdded<Flashlight>((flashlight) => {
+                    this.helper(newFlashlight, flashlight, this.getFreeSlots(room));
+                })
+                components.addComponent<Flashlight>(newFlashlight);
+                return;
+            }
+            currentProbability += ServerSettings.ITEMS.BATTERY.SPAWN_RATE_IN_PERCENT;
+            if(rand <= currentProbability) {
+                const newBattery = ServerStorage.Tools.Battery.Clone();
+                components.onComponentAdded<Battery>((battery) => {
+                    this.helper(newBattery, battery, this.getFreeSlots(room));
+                })
+                components.addComponent<Battery>(newBattery);
+                return;
+            }
+            currentProbability += ServerSettings.ITEMS.LIGHTER.SPAWN_RATE_IN_PERCENT;
+            if(rand <= currentProbability) {
+                const newLighter = ServerStorage.Tools.Lighter.Clone();
+                components.onComponentAdded<Lighter>((lighter) => {
+                    this.helper(newLighter, lighter, this.getFreeSlots(room));
+                })
+                components.addComponent<Lighter>(newLighter);
+                return;
+            }
+            currentProbability += ServerSettings.ITEMS.VITAMINS.SPAWN_RATE_IN_PERCENT;
+            if(rand <= currentProbability) {
+                const newVitamins = ServerStorage.Tools.Vitamins.Clone();
+                components.onComponentAdded<Vitamins>((vitamins) => {
+                    this.helper(newVitamins, vitamins, this.getFreeSlots(room));
+                })
+                components.addComponent<Vitamins>(newVitamins);
+                return;
+            }
+            currentProbability += ServerSettings.ITEMS.LOCKPICK.SPAWN_RATE_IN_PERCENT;
+            if(rand <= currentProbability) {
+                const newLockpick = ServerStorage.Tools.Lockpick.Clone();
+                components.onComponentAdded<Lockpick>((lockpick) => {
+                    this.helper(newLockpick, lockpick, this.getFreeSlots(room));
+                })
+                components.addComponent<Lockpick>(newLockpick);
+                return;
+            }
+        });
+    }
 
-            const newFlashlight = ServerStorage.Tools.Flashlight.Clone();
-            components.onComponentAdded<Flashlight>((flashlight) => {
-                if(flashlight.instance === newFlashlight) {
-                    freeSlots = randomDrawer.getFreeSlots();
-                    if(freeSlots.size() === 0) {
-                        flashlight.destroy();
-                        this.logger.Warn("There should be free item slots, but there are none.");
-                        return;
-                    }
-                    const randomSlot: Slot = freeSlots[math.random(0, freeSlots.size() -1)];
-                    randomSlot.setItem(flashlight);
-                    flashlight.activateProximityPromt();
-                    flashlight.weldOnTo(randomSlot.instance);
-                }
-            })
-            components.addComponent<Flashlight>(newFlashlight);
+    private helper(tool: Tool, component: AbstractToolBaseComponent<IToolAttributes, IToolComponent>, freeSlots: Slot[]): void {
+        if(component.instance === tool) {
+            if(freeSlots.size() === 0) {
+                component.destroy();
+                this.logger.Warn("There should be free item slots, but there are none.");
+                return;
+            }
+            const randomSlot: Slot = freeSlots[math.random(0, freeSlots.size() -1)];
+            randomSlot.setItem(component);
+            component.activateProximityPromt();
+            component.weldOnTo(randomSlot.instance);
         }
-        if(math.random() * 100 <= ServerSettings.ITEMS.BATTERY.SPAWN_RATE_IN_PERCENT) {
+    }
 
-            const newBattery = ServerStorage.Tools.Battery.Clone();
-            components.onComponentAdded<Battery>((battery) => {
-                if(battery.instance === newBattery) {
-                    freeSlots = randomDrawer.getFreeSlots();
-                    if(freeSlots.size() === 0) {
-                        battery.destroy();
-                        this.logger.Warn("There should be free item slots, but there are none.");
-                        return;
-                    }
-                    const randomSlot: Slot = freeSlots[math.random(0, freeSlots.size() -1)];
-                    randomSlot.setItem(battery);
-                    battery.activateProximityPromt();
-                    battery.weldOnTo(randomSlot.instance);
-                }
-            })
-            components.addComponent<Battery>(newBattery);
-        }
-        if(math.random() * 100 <= ServerSettings.ITEMS.LIGHTER.SPAWN_RATE_IN_PERCENT) {
+    private getFreeSlots(room: Room): Slot[] {
+        const drawers: Drawer[] = room.getDrawers();
+        let freeSlots: Slot[] = new Array<Slot>();
 
-            const newLighter = ServerStorage.Tools.Lighter.Clone();
-            components.onComponentAdded<Lighter>((lighter) => {
-                if(lighter.instance === newLighter) {
-                    freeSlots = randomDrawer.getFreeSlots();
-                    if(freeSlots.size() === 0) {
-                        lighter.destroy();
-                        this.logger.Warn("There should be free item slots, but there are none.");
-                        return;
-                    }
-                    const randomSlot: Slot = freeSlots[math.random(0, freeSlots.size() -1)];
-                    randomSlot.setItem(lighter);
-                    lighter.activateProximityPromt();
-                    lighter.weldOnTo(randomSlot.instance);     
-                }
+        drawers.forEach(drawer => {
+            drawer.getFreeSlots().forEach(slot => {
+                freeSlots.push(slot);
             })
-            components.addComponent<Lighter>(newLighter);
-        }
-        if(math.random() * 100 <= ServerSettings.ITEMS.VITAMINS.SPAWN_RATE_IN_PERCENT) {
-            const newVitamins = ServerStorage.Tools.Vitamins.Clone();
-            components.onComponentAdded<Vitamins>((vitamins) => {
-                if(vitamins.instance === newVitamins) {
-                    freeSlots = randomDrawer.getFreeSlots();
-                    if(freeSlots.size() === 0) {
-                        vitamins.destroy();
-                        this.logger.Warn("There should be free item slots, but there are none.");
-                        return;
-                    }
-                    const randomSlot: Slot = freeSlots[math.random(0, freeSlots.size() -1)];
-                    randomSlot.setItem(vitamins);
-                    vitamins.activateProximityPromt();
-                    vitamins.weldOnTo(randomSlot.instance);
-                }
-            })
-            components.addComponent<Vitamins>(newVitamins);
-        }
+        });
+        
+        return freeSlots;
     }
 }
