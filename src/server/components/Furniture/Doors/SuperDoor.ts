@@ -3,7 +3,7 @@ import { Component, Components } from "@flamework/components/out/components";
 import { Dependency, OnStart } from "@flamework/core/out/flamework";
 import { Logger } from "@rbxts/log/out/Logger";
 import { TweenService } from "@rbxts/services";
-import { Key } from "server/components/Items/Key";
+import { Key } from "server/components/Items/Tools/Key";
 import { DoorState } from "server/Enum/DoorState";
 import { AudioService } from "server/services/AudioService";
 import { GameService } from "server/services/GameService";

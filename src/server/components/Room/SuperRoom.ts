@@ -3,7 +3,7 @@ import { Component } from "@flamework/components/out/components";
 import { OnStart } from "@flamework/core/out/flamework";
 import { Zone } from "@rbxts/zone-plus";
 import { Drawer } from "../Furniture/ItemSlots/Drawer";
-import { Key } from "../Items/Key";
+import { Key } from "../Items/Tools/Key";
 import { AudioService } from "server/services/AudioService";
 import { AccentLamp } from "../Lamp/AccentLamp";
 import { IDoorAttributes, IDoorComponent, SuperDoor } from "../Furniture/Doors/SuperDoor";

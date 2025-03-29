@@ -1,6 +1,6 @@
 import { Component, BaseComponent } from "@flamework/components";
 import { Logger } from "@rbxts/log/out/Logger";
-import { AbstractToolBaseComponent, IToolAttributes, IToolComponent } from "server/components/Items/AbstractToolBaseComponent";
+import { AbstractToolBaseComponent, IToolAttributes, IToolComponent } from "server/components/Items/Tools/AbstractToolBaseComponent";
 
 export interface ISlotComponent extends BasePart {
     ItemLocation: Attachment;

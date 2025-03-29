@@ -1,6 +1,6 @@
 import { OnStart, Service } from "@flamework/core";
 import { Logger } from "@rbxts/log/out/Logger";
-import { AbstractToolBaseComponent, IToolAttributes, IToolComponent } from "server/components/Items/AbstractToolBaseComponent";
+import { AbstractToolBaseComponent, IToolAttributes, IToolComponent } from "server/components/Items/Tools/AbstractToolBaseComponent";
 
 @Service()
 export class ToolService implements OnStart{

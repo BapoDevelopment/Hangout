@@ -2,9 +2,9 @@ import { Component, Components } from "@flamework/components";
 import { ServerStorage } from "@rbxts/services";
 import { Dependency } from "@flamework/core";
 import { Logger } from "@rbxts/log/out/Logger";
-import { Key } from "../Items/Key";
+import { Key } from "../Items/Tools/Key";
 import { IRoomAttributes, IRoomComponent, SuperRoom } from "./SuperRoom";
-import { AbstractToolBaseComponent, IToolAttributes, IToolComponent } from "../Items/AbstractToolBaseComponent";
+import { AbstractToolBaseComponent, IToolAttributes, IToolComponent } from "../Items/Tools/AbstractToolBaseComponent";
 import { Slot } from "../Furniture/ItemSlots/Slot";
 import { LockedDoor } from "../Furniture/Doors/LockedDoor";
 

@@ -100,7 +100,6 @@ export class Lighter extends AbstractToolBaseComponent<ILighterAttributes, ILigh
     }
 
     private turnOff(player: Player): void {
-        this.logger.Info("aus");
         this.attributes.On = false;
         this.instance.Handle.Fire.PointLight.Enabled = false;
         this.instance.Handle.Switch.On.Transparency = 1;
