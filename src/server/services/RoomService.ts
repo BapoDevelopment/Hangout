@@ -112,7 +112,7 @@ export class RoomService {
 
         const components = Dependency<Components>();
         freeSlots.forEach(() => {
-            if(math.random() * 10 >= 5) { return; }
+            if(math.random() * 100 >= ServerSettings.FURNITURE.DRAWER.ITEM_SPAWN_PROBABILITY) { return; }
             const rand: number = math.random() * cumulativeProbability;
             let currentProbability: number = 0;
 

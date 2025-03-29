@@ -11,6 +11,11 @@ export const ServerSettings = {
     ROOMS: {
         DOOR_LOCKED_PROBABILITY: 0,
     },
+    FURNITURE: {
+        DRAWER: {
+            ITEM_SPAWN_PROBABILITY: 50,
+        },
+    },
     ENTITIES: {
         VOID: {
             DMG: 50,
