@@ -18,6 +18,7 @@ import { AccentLamp } from "server/components/Lamp/AccentLamp";
 import { Room } from "server/components/Room/Room";
 import { ServerSettings } from "server/ServerSettings";
 import { Unpickable } from "server/components/Items/Unpickable";
+import { Cash } from "server/components/Items/Cash";
 
 @Service()
 export class RoomService {
@@ -102,7 +103,7 @@ export class RoomService {
         }
     }
 
-    public addRandomItems(room: Room): void {
+    public addTools(room: Room): void {
         let freeSlots: Slot[] = this.getFreeSlots(room);
         
         let cumulativeProbability: number = ServerSettings.ITEMS.FLASHLIGHT.SPAWN_RATE_IN_PERCENT
@@ -121,7 +122,7 @@ export class RoomService {
             if(rand <= currentProbability) {
                 const newFlashlight = ServerStorage.Tools.Flashlight.Clone();
                 components.onComponentAdded<Flashlight>((flashlight) => {
-                    this.helper(newFlashlight, flashlight, this.getFreeSlots(room));
+                    this.placeItem(newFlashlight, flashlight, this.getFreeSlots(room));
                 })
                 components.addComponent<Flashlight>(newFlashlight);
                 return;
@@ -130,7 +131,7 @@ export class RoomService {
             if(rand <= currentProbability) {
                 const newBattery = ServerStorage.Tools.Battery.Clone();
                 components.onComponentAdded<Battery>((battery) => {
-                    this.helper(newBattery, battery, this.getFreeSlots(room));
+                    this.placeItem(newBattery, battery, this.getFreeSlots(room));
                 })
                 components.addComponent<Battery>(newBattery);
                 return;
@@ -139,7 +140,7 @@ export class RoomService {
             if(rand <= currentProbability) {
                 const newLighter = ServerStorage.Tools.Lighter.Clone();
                 components.onComponentAdded<Lighter>((lighter) => {
-                    this.helper(newLighter, lighter, this.getFreeSlots(room));
+                    this.placeItem(newLighter, lighter, this.getFreeSlots(room));
                 })
                 components.addComponent<Lighter>(newLighter);
                 return;
@@ -148,7 +149,7 @@ export class RoomService {
             if(rand <= currentProbability) {
                 const newVitamins = ServerStorage.Tools.Vitamins.Clone();
                 components.onComponentAdded<Vitamins>((vitamins) => {
-                    this.helper(newVitamins, vitamins, this.getFreeSlots(room));
+                    this.placeItem(newVitamins, vitamins, this.getFreeSlots(room));
                 })
                 components.addComponent<Vitamins>(newVitamins);
                 return;
@@ -157,7 +158,7 @@ export class RoomService {
             if(rand <= currentProbability) {
                 const newLockpick = ServerStorage.Tools.Lockpick.Clone();
                 components.onComponentAdded<Lockpick>((lockpick) => {
-                    this.helper(newLockpick, lockpick, this.getFreeSlots(room));
+                    this.placeItem(newLockpick, lockpick, this.getFreeSlots(room));
                 })
                 components.addComponent<Lockpick>(newLockpick);
                 return;
@@ -165,7 +166,7 @@ export class RoomService {
         });
     }
 
-    private helper(tool: Tool, component: AbstractToolBaseComponent<IToolAttributes, IToolComponent>, freeSlots: Slot[]): void {
+    private placeItem(tool: Tool, component: AbstractToolBaseComponent<IToolAttributes, IToolComponent>, freeSlots: Slot[]): void {
         if(component.instance === tool) {
             if(freeSlots.size() === 0) {
                 component.destroy();
@@ -208,10 +209,33 @@ export class RoomService {
             newUnpickable = newUnpickable.Clone();
 
             components.onComponentAdded<Unpickable>((unpickable) => {
-                this.helper(newUnpickable, unpickable, this.getFreeSlots(room));
+                this.placeItem(newUnpickable, unpickable, this.getFreeSlots(room));
             })
             components.addComponent<Unpickable>(newUnpickable);
             return;
         })
+    }
+
+    public addCash(room: Room): void {
+        let freeSlots: Slot[] = this.getFreeSlots(room);
+        const components = Dependency<Components>();
+
+        freeSlots.forEach(slot => {
+            //if(math.random() * 10 >=5) { return; }
+
+            const tools: Folder = ServerStorage.FindFirstChild("Tools") as Folder;
+            if(!tools) { this.logger.Warn("Tools folder not found"); return; }
+            const cashFolder: Folder = tools.FindFirstChild("Cash") as Folder;
+            if(!cashFolder) { this.logger.Warn("Cash folder not found"); return; }
+            let newCash: Tool = cashFolder.GetChildren()[math.random(0, cashFolder.GetChildren().size() -1)] as Tool;
+            if(!newCash) { return; }
+            newCash = newCash.Clone();
+
+            components.onComponentAdded<Cash>((cash) => {
+                this.placeItem(newCash, cash, this.getFreeSlots(room));
+            })
+            components.addComponent<Cash>(newCash);
+            return;
+        })        
     }
 }

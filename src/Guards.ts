@@ -93,5 +93,13 @@ declare global {
                 }
             };
         };
+        Cash: Folder & {
+            5: MeshPart & {
+                ProximityPromtPosition: Attachment;
+                ProximityPrompt: ProximityPrompt;
+                WeldConstraint: WeldConstraint;
+                Pickup: Sound;
+            }
+        }
     }
 }
