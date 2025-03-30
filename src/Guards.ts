@@ -83,6 +83,15 @@ declare global {
                     WeldConstraint: WeldConstraint;
                 }
             };
-        }
+        };
+        Unpickables: Folder & {
+            Papers: Tool & {
+                Handle: MeshPart & {
+                    ProximityPromtPosition: Attachment;
+                    ProximityPrompt: ProximityPrompt;
+                    WeldConstraint: WeldConstraint;
+                }
+            };
+        };
     }
 }

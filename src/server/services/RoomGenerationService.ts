@@ -50,6 +50,7 @@ export class RoomGenerationService {
 		roomComponent.setNumber(this.roomCunter);
 		this.roomService.furniture(roomComponent);
 		this.roomService.addRandomItems(roomComponent);
+		this.roomService.addUnpickables(roomComponent);
 		if(roomComponent.isLocked() === false) {
 			this.roomService.addRegularDoor(roomComponent);
 		}

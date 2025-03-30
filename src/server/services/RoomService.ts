@@ -17,6 +17,7 @@ import { Vitamins } from "server/components/Items/Tools/Vitamins";
 import { AccentLamp } from "server/components/Lamp/AccentLamp";
 import { Room } from "server/components/Room/Room";
 import { ServerSettings } from "server/ServerSettings";
+import { Unpickable } from "server/components/Items/Unpickable";
 
 @Service()
 export class RoomService {
@@ -189,5 +190,28 @@ export class RoomService {
         });
         
         return freeSlots;
+    }
+
+    public addUnpickables(room: Room): void {
+        let freeSlots: Slot[] = this.getFreeSlots(room);
+        const components = Dependency<Components>();
+
+        freeSlots.forEach(slot => {
+            if(math.random() * 10 >=5) { return; }
+
+            const tools: Folder = ServerStorage.FindFirstChild("Tools") as Folder;
+            if(!tools) { this.logger.Warn("Tools folder not found"); return; }
+            const unpickables: Folder = tools.FindFirstChild("Unpickables") as Folder;
+            if(!unpickables) { this.logger.Warn("Unpickables folder not found"); return; }
+            let newUnpickable: Tool = unpickables.GetChildren()[math.random(0, unpickables.GetChildren().size() -1)] as Tool;
+            if(!newUnpickable) { return; }
+            newUnpickable = newUnpickable.Clone();
+
+            components.onComponentAdded<Unpickable>((unpickable) => {
+                this.helper(newUnpickable, unpickable, this.getFreeSlots(room));
+            })
+            components.addComponent<Unpickable>(newUnpickable);
+            return;
+        })
     }
 }
