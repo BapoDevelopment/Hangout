@@ -12,6 +12,7 @@ export interface ISlotComponent extends BasePart {
 export class Slot extends BaseComponent<{}, ISlotComponent> {
 
     private storedItem: AbstractToolBaseComponent<IToolAttributes, IToolComponent> | undefined;
+    private reserved: boolean = false;
 
     constructor(private readonly logger: Logger) {
         super();
@@ -34,6 +35,14 @@ export class Slot extends BaseComponent<{}, ISlotComponent> {
         item.instance.PivotTo(new CFrame(this.instance.ItemLocation.WorldPosition));
         item.instance.Parent = this.instance.ItemLocation;
         return true;
+    }
+
+    public reserve(): void {
+        this.reserved = true;
+    }
+
+    public isReserved(): boolean {
+        return this.reserved;
     }
 
     public removeItem(): void {

@@ -49,9 +49,7 @@ export class RoomGenerationService {
 		let roomComponent: Room = this.components.addComponent<Room>(roomModel);
 		roomComponent.setNumber(this.roomCunter);
 		this.roomService.furniture(roomComponent);
-		this.roomService.addCash(roomComponent);
-		this.roomService.addTools(roomComponent);
-		this.roomService.addUnpickables(roomComponent);
+		this.roomService.addRandomItems(roomComponent);
 		if(roomComponent.isLocked() === false) {
 			this.roomService.addRegularDoor(roomComponent);
 		}

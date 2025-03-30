@@ -10,6 +10,7 @@ import { IDoorAttributes, IDoorComponent, SuperDoor } from "../Furniture/Doors/S
 import { Wardrobe } from "../Furniture/HidingSpots/Wardrobe";
 import { Bed } from "../Furniture/HidingSpots/Bed";
 import { LockedDoor } from "../Furniture/Doors/LockedDoor";
+import { Table } from "../Furniture/ItemSlots/Table";
 
 export interface IRoomComponent extends Instance {
     Build: Model;
@@ -37,6 +38,7 @@ export class SuperRoom<A extends IRoomAttributes, I extends IRoomComponent> exte
     protected doorsComponent: SuperDoor<IDoorAttributes, IDoorComponent> | undefined;
     protected zone: Zone | undefined;
     protected drawers: Drawer[] = [];
+    protected tables: Table[] = [];
     protected wardrobes: Wardrobe[] = [];
     protected beds: Bed[] = [];
     protected accentLamps: AccentLamp[] = [];
@@ -74,6 +76,14 @@ export class SuperRoom<A extends IRoomAttributes, I extends IRoomComponent> exte
 
     public getDrawers(): Drawer[] {
         return this.drawers;
+    }
+
+    public addTable(currentTable: Table) {
+        this.tables.push(currentTable);
+    }
+
+    public getTables(): Table[] {
+        return this.tables;
     }
 
     public addWardrobe(wardrobe: Wardrobe) {
