@@ -41,7 +41,7 @@ export class Flashlight extends AbstractToolBaseComponent<IFlashlightAttributes,
             this.onProximityPromtActivated(player);
         });
 
-        this.setStackable(ServerSettings.ITEMS.FLASHLIGHT.STACKABLE);
+        this.setStackable(ServerSettings.ITEMS.TOOLS.FLASHLIGHT.STACKABLE);
     }
     
     onStart(): void {
@@ -104,7 +104,7 @@ export class Flashlight extends AbstractToolBaseComponent<IFlashlightAttributes,
     private drainBattery(player: Player): void {
         task.spawn(() => {
             while (this.attributes.On && this.attributes.Battery > 0) {
-                this.attributes.Battery -= ServerSettings.ITEMS.FLASHLIGHT.BATTERY_DRAIN_PER_MILLISECOND;
+                this.attributes.Battery -= ServerSettings.ITEMS.TOOLS.FLASHLIGHT.BATTERY_DRAIN_PER_MILLISECOND;
                 if (this.attributes.Battery <= 0) {
                     this.attributes.Battery = 0;
                     this.turnOff(player);

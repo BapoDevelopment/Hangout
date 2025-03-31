@@ -39,8 +39,8 @@ export class Battery extends AbstractToolBaseComponent<IBatteryAttributes, IBatt
         if(flashlgihtTool !== undefined) {
             const battery: number = flashlgihtTool.GetAttribute("Battery") as number;
             let setBatteryLevel: number = battery + this.attributes.Battery
-            if(setBatteryLevel > ServerSettings.ITEMS.FLASHLIGHT.MAX_BATTERY) {
-                setBatteryLevel = ServerSettings.ITEMS.FLASHLIGHT.MAX_BATTERY;
+            if(setBatteryLevel > ServerSettings.ITEMS.TOOLS.FLASHLIGHT.MAX_BATTERY) {
+                setBatteryLevel = ServerSettings.ITEMS.TOOLS.FLASHLIGHT.MAX_BATTERY;
             }
             flashlgihtTool.SetAttribute("Battery",  setBatteryLevel);
             this.destroy();

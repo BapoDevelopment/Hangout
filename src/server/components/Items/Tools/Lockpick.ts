@@ -32,7 +32,7 @@ export class Lockpick extends AbstractToolBaseComponent<ILockpickAttributes, ILo
             this.onProximityPromtActivated(player);
         });
 
-        this.setStackable(ServerSettings.ITEMS.LOCKPICK.STACKABLE);
+        this.setStackable(ServerSettings.ITEMS.TOOLS.LOCKPICK.STACKABLE);
     }
     
     onStart(): void {}
@@ -40,7 +40,7 @@ export class Lockpick extends AbstractToolBaseComponent<ILockpickAttributes, ILo
     protected onProximityPromtActivated(player: Player): boolean {
         if(super.getPlayerTool(player, "Lockpick") !== undefined) {
             const currentStack: number = this.getPlayerLockpicks(player);
-            if(currentStack < ServerSettings.ITEMS.LOCKPICK.STACKABLE) {
+            if(currentStack < ServerSettings.ITEMS.TOOLS.LOCKPICK.STACKABLE) {
                 this.updateStack(player);
                 this.destroy();                
             }

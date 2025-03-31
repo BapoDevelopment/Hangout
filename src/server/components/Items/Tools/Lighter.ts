@@ -44,7 +44,7 @@ export class Lighter extends AbstractToolBaseComponent<ILighterAttributes, ILigh
         });
 
 
-        this.setStackable(ServerSettings.ITEMS.LIGHTER.STACKABLE);
+        this.setStackable(ServerSettings.ITEMS.TOOLS.LIGHTER.STACKABLE);
     }
     
     onStart(): void {
@@ -110,7 +110,7 @@ export class Lighter extends AbstractToolBaseComponent<ILighterAttributes, ILigh
     private drainGas(player: Player): void {
         task.spawn(() => {
             while (this.attributes.On && this.attributes.Gas > 0) {
-                this.attributes.Gas -= ServerSettings.ITEMS.LIGHTER.GAS_DRAIN_PER_MILLISECOND;
+                this.attributes.Gas -= ServerSettings.ITEMS.TOOLS.LIGHTER.GAS_DRAIN_PER_MILLISECOND;
                 if (this.attributes.Gas <= 0) {
                     this.attributes.Gas = 0;
                     this.turnOff(player);

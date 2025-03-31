@@ -23,7 +23,7 @@ export class Key extends AbstractToolBaseComponent<IKeyAttributes, IKeyComponent
             this.onProximityPromtActivated(player);
         });
 
-        this.setStackable(ServerSettings.ITEMS.KEY.STACKABLE);
+        this.setStackable(ServerSettings.ITEMS.TOOLS.KEY.STACKABLE);
     }
     
     onStart(): void {}

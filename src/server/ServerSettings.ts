@@ -11,11 +11,6 @@ export const ServerSettings = {
     ROOMS: {
         DOOR_LOCKED_PROBABILITY: 0,
     },
-    FURNITURE: {
-        DRAWER: {
-            ITEM_SPAWN_PROBABILITY: 50,
-        },
-    },
     ENTITIES: {
         VOID: {
             DMG: 50,
@@ -32,34 +27,55 @@ export const ServerSettings = {
         },
     },
     ITEMS: {
-        KEY: {
-            STACKABLE: 0,
+        TOOLS: {
+            CATEGORY_SPAWN_RATE_IN_PERCENT: 25,
+            KEY: {
+                STACKABLE: 0,
+            },
+            FLASHLIGHT: {
+                SPAWN_RATE_IN_PERCENT: 20,
+                STACKABLE: 0,
+                BATTERY_DRAIN_PER_MILLISECOND: 0.01,
+                MAX_BATTERY: 10,
+            },
+            BATTERY: {
+                SPAWN_RATE_IN_PERCENT: 20,
+                STACKABLE: 0,
+            },
+            LIGHTER: {
+                SPAWN_RATE_IN_PERCENT: 20,
+                STACKABLE: 0,
+                GAS_DRAIN_PER_MILLISECOND: 0.01,
+            },
+            VITAMINS: {
+                SPAWN_RATE_IN_PERCENT: 20,
+                STACKABLE: 3,
+                ADDED_WALKSPEED: 60,
+                DURATION: SharedSettings.ITEMS.VITAMINS.DURATION,
+                PAUSE: 3,
+            },
+            LOCKPICK: {
+                SPAWN_RATE_IN_PERCENT: 20,
+                STACKABLE: 3,
+            },
         },
-        FLASHLIGHT: {
-            SPAWN_RATE_IN_PERCENT: 20,
-            STACKABLE: 0,
-            BATTERY_DRAIN_PER_MILLISECOND: 0.01,
-            MAX_BATTERY: 10,
+        UNPICKABLE: {
+            CATEGORY_SPAWN_RATE_IN_PERCENT: 25,
+            PAPERS: {
+                SPAWN_RATE_IN_PERCENT: 50,
+            },
+            COMICBOOK: {
+                SPAWN_RATE_IN_PERCENT: 50,
+            }
         },
-        BATTERY: {
-            SPAWN_RATE_IN_PERCENT: 20,
-            STACKABLE: 0,
+        CASH: {
+            CATEGORY_SPAWN_RATE_IN_PERCENT: 25,
+            5: {
+                SPAWN_RATE_IN_PERCENT: 100,
+            },
         },
-        LIGHTER: {
-            SPAWN_RATE_IN_PERCENT: 20,
-            STACKABLE: 0,
-            GAS_DRAIN_PER_MILLISECOND: 0.01,
-        },
-        VITAMINS: {
-            SPAWN_RATE_IN_PERCENT: 20,
-            STACKABLE: 3,
-            ADDED_WALKSPEED: 60,
-            DURATION: SharedSettings.ITEMS.VITAMINS.DURATION,
-            PAUSE: 3,
-        },
-        LOCKPICK: {
-            SPAWN_RATE_IN_PERCENT: 20,
-            STACKABLE: 3,
+        EMPTY: {
+            CATEGORY_SPAWN_RATE_IN_PERCENT: 25,
         }
     },
     RATE_LIMITS: {

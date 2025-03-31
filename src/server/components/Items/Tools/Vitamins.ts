@@ -39,7 +39,7 @@ export class Vitamins extends AbstractToolBaseComponent<IVitaminsAttributes, IVi
         });
 
 
-        this.setStackable(ServerSettings.ITEMS.VITAMINS.STACKABLE);
+        this.setStackable(ServerSettings.ITEMS.TOOLS.VITAMINS.STACKABLE);
     }
     
     onStart(): void {
@@ -49,7 +49,7 @@ export class Vitamins extends AbstractToolBaseComponent<IVitaminsAttributes, IVi
     protected onProximityPromtActivated(player: Player): boolean {
         if(super.getPlayerTool(player, "Vitamins") !== undefined) {
             const currentStack: number = this.getPlayerVitamins(player);
-            if(currentStack < ServerSettings.ITEMS.VITAMINS.STACKABLE) {
+            if(currentStack < ServerSettings.ITEMS.TOOLS.VITAMINS.STACKABLE) {
                 this.updateStack(player);
                 this.destroy();                
             }
@@ -75,7 +75,7 @@ export class Vitamins extends AbstractToolBaseComponent<IVitaminsAttributes, IVi
         const lastActivationTimeValue: AttributeValue | undefined = player.Character.GetAttribute("LastVitaminsActivated");
         if(lastActivationTimeValue !== undefined) {
             const lastActivationTime: number | undefined = tonumber(lastActivationTimeValue);
-            if(!(lastActivationTime && os.time() - lastActivationTime > ServerSettings.ITEMS.VITAMINS.PAUSE)) {
+            if(!(lastActivationTime && os.time() - lastActivationTime > ServerSettings.ITEMS.TOOLS.VITAMINS.PAUSE)) {
                 return;
             }
         }
@@ -92,8 +92,8 @@ export class Vitamins extends AbstractToolBaseComponent<IVitaminsAttributes, IVi
             if(!player.Character) { return; }
             const humanoid: Humanoid | undefined = player.Character.WaitForChild("Humanoid") as Humanoid;
             const pervWalkspeed = humanoid.WalkSpeed;
-            humanoid.WalkSpeed += ServerSettings.ITEMS.VITAMINS.ADDED_WALKSPEED;
-            wait(ServerSettings.ITEMS.VITAMINS.DURATION);
+            humanoid.WalkSpeed += ServerSettings.ITEMS.TOOLS.VITAMINS.ADDED_WALKSPEED;
+            wait(ServerSettings.ITEMS.TOOLS.VITAMINS.DURATION);
             if(humanoid) {
                 humanoid.WalkSpeed = pervWalkspeed;
                 if(player.Character) {
