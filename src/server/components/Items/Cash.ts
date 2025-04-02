@@ -4,6 +4,7 @@ import { Logger } from "@rbxts/log";
 import { AbstractToolBaseComponent, IToolAttributes, IToolComponent } from "./Tools/AbstractToolBaseComponent";
 import { ToolService } from "server/services/ToolService";
 import { AudioService } from "server/services/AudioService";
+import { CashService } from "server/services/CashService";
 
 interface ICashComponent extends IToolComponent {
     Handle: MeshPart & {
@@ -26,7 +27,10 @@ interface ICashAttributes extends IToolAttributes {
 })
 export class Cash extends AbstractToolBaseComponent<ICashAttributes, ICashComponent> implements OnStart{
 
-    constructor(protected audioService: AudioService, protected toolService: ToolService, protected readonly logger: Logger) {
+    constructor(protected audioService: AudioService
+        , protected toolService: ToolService
+        , private cashService: CashService
+        , protected readonly logger: Logger) {
         super(toolService, logger);
 
         this.instance.Handle.ProximityPrompt.Triggered.Connect((player) => {
@@ -38,9 +42,12 @@ export class Cash extends AbstractToolBaseComponent<ICashAttributes, ICashCompon
 
     protected onProximityPromtActivated(player: Player): boolean {
         this.logger.Info(`Added ${this.attributes.Amount} to ${player.Name}.`);
-        
+
+        this.cashService.collectedCoins(player, this.attributes.Amount);
+
         const pickup: Sound = this.instance.Handle.Pickup.Clone();
         pickup.Parent = player.Character;
+
         this.audioService.playSoundWithCallback(pickup, () => {
             pickup.Destroy();
         });

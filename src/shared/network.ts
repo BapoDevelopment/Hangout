@@ -17,7 +17,9 @@ interface ClientToServerEvents {
 }
 
 interface ServerToClientEvents {
-    layDown(): void;
+    ressources: {
+        collectedCoins(amount: number): void;
+    }
 }
 
 interface ClientToServerFunctions {}

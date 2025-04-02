@@ -82,8 +82,6 @@ export class Wardrobe extends HidingSpot <{}, IWardrobeComponent> implements OnS
             humanoidRootPart.Anchored = true;
         }
 
-        Events.layDown(player);
-
         this.openWardrobe();
 
         //Play open Sound
@@ -126,7 +124,6 @@ export class Wardrobe extends HidingSpot <{}, IWardrobeComponent> implements OnS
         this.characterLeaveHidingConnection?.Disconnect();
 
         this.collisionGroupService.setCollisionGroup(player.Character, "Wardrobe");
-        Events.layDown(player);
 
         this.openWardrobe();
 
