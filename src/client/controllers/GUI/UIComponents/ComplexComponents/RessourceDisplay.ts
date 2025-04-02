@@ -1,10 +1,10 @@
-import { Children, New } from "@rbxts/fusion";
+import { Children, New, Value } from "@rbxts/fusion";
 import { NumberText } from "../BaseComponents/NumberText";
 import { Icon } from "../BaseComponents/Icon";
 
 export interface IRessourceDisplay {
     Position: UDim2,
-    Number: number;
+    Number: Value<number>;
 }
 
 export function RessourceDisplay(props: IRessourceDisplay) {
@@ -23,7 +23,7 @@ export function RessourceDisplay(props: IRessourceDisplay) {
             }),
             Icon({
                 Position: UDim2.fromScale(0, 0),
-                Icon: "http://www.roblox.com/asset/?id=117582891502895",
+                Icon: "rbxassetid://117582891502895",
             }),
         ],
     })

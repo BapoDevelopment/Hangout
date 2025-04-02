@@ -18,7 +18,8 @@ interface ClientToServerEvents {
 
 interface ServerToClientEvents {
     ressources: {
-        collectedCoins(amount: number): void;
+        collectedCoins(amount: number, pos: Vector3): void;
+        giveCoins(amount: number): void;
     }
 }
 

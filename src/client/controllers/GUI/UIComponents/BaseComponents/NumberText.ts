@@ -1,11 +1,11 @@
-import { Computed, New } from "@rbxts/fusion";
+import { Computed, New, Value } from "@rbxts/fusion";
 
 export interface INumberText {
     Size?: UDim2;
     Position?: UDim2;
     TextXAlignment?: Enum.TextXAlignment
     TextColor3?: Color3;
-    Number: number;
+    Number: Value<number>;
 }
 
 export function NumberText(props: INumberText) {
@@ -15,7 +15,9 @@ export function NumberText(props: INumberText) {
         Size: props.Size,
         Position: props.Position,
         TextColor3: props.TextColor3,
-        Text: tostring(formatNumber(props.Number)),
+        Text: Computed(() => {
+            return tostring(formatNumber(props.Number.get()))
+        }),
     })
 }
 

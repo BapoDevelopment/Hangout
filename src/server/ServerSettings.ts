@@ -28,7 +28,7 @@ export const ServerSettings = {
     },
     ITEMS: {
         TOOLS: {
-            CATEGORY_SPAWN_RATE_IN_PERCENT: 25,
+            CATEGORY_SPAWN_RATE_IN_PERCENT: 0,
             KEY: {
                 STACKABLE: 0,
             },
@@ -60,7 +60,7 @@ export const ServerSettings = {
             },
         },
         UNPICKABLE: {
-            CATEGORY_SPAWN_RATE_IN_PERCENT: 25,
+            CATEGORY_SPAWN_RATE_IN_PERCENT: 0,
             PAPERS: {
                 SPAWN_RATE_IN_PERCENT: 50,
             },
@@ -69,13 +69,13 @@ export const ServerSettings = {
             }
         },
         CASH: {
-            CATEGORY_SPAWN_RATE_IN_PERCENT: 25,
+            CATEGORY_SPAWN_RATE_IN_PERCENT: 100,
             5: {
                 SPAWN_RATE_IN_PERCENT: 100,
             },
         },
         EMPTY: {
-            CATEGORY_SPAWN_RATE_IN_PERCENT: 25,
+            CATEGORY_SPAWN_RATE_IN_PERCENT: 0,
         }
     },
     RATE_LIMITS: {
