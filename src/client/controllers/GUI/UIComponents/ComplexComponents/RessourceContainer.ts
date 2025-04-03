@@ -1,7 +1,5 @@
 import { New, StateObject, Computed, Observer, Value, Children, ForValues, Spring } from "@rbxts/fusion";
 import { Icon } from "../BaseComponents/Icon";
-import { Workspace } from "@rbxts/services";
-import { Events } from "client/network";
 
 interface CoinData {
     position: StateObject<UDim2>;
@@ -17,20 +15,14 @@ export interface IRessourceContainer {
 }
 
 export function RessourceContainer(props: IRessourceContainer) {
+    const observer = Observer(props.amount)
 
-    Events.ressources.collectedCoins.connect((amount: number, partPosition: Vector3) => {
-        // Erhöhe den Cash-Wert um die neue Menge
-        const camera = Workspace.CurrentCamera;
-        if (!camera) return;
-        const [screenPos, onScreen] = camera.WorldToScreenPoint(partPosition);
-        if (!onScreen) return;
-        const screenPosition = new UDim2(0, screenPos.X, 0, screenPos.Y);
-
-        // Coins erzeugen: Statt den Wert zu überschreiben, addieren wir die neue Menge
-        print("spawn cash: " + tostring(amount));
-        spawnCoins(screenPosition, amount);
+    const disconnect = observer.onChange(() => {
+        if(props.amount.get() === 0) { return; }
+        spawnCoins(props.spawnPosition, props.amount.get());
+        props.amount.set(0);
     });
-    
+
     return New("Frame")({
         Name: "CoinContainer",
         BackgroundTransparency: 1,
@@ -77,8 +69,9 @@ function spawnCoins(position: UDim2, count: number): void {
         const animatedPosition = Spring(startState, frequency, damping);
     
         // Erstelle einen reaktiven Wert für die Transparenz, initial 0 (sichtbar)
-        const transparency = Value(0);
-        const animatedTransparency = Spring(transparency, 35, 1);
+        const startTransparency = Value(0);
+        const targetTransparency = 1;
+        const animatedTransparency = Spring(startTransparency, 35, 1);
     
         // Observer, der das Ende der ersten Animation detektiert:
         const firstThreshold = 1.1;
@@ -99,7 +92,17 @@ function spawnCoins(position: UDim2, count: number): void {
                         math.abs(animatedPosition.get().Y.Offset - secondTarget.Y.Offset) < secondThreshold
                     ) {
                         // Setze die Transparenz auf 1 (Fade-Out)
-                        transparency.set(1);
+                        startTransparency.set(1);
+                    }
+                });
+                const thirdThreshold = 1.1;
+                const thirdObserver = Observer(animatedPosition).onChange(() => {
+                    if (
+                        math.abs(animatedPosition.get().X.Offset - secondTarget.X.Offset) < thirdThreshold &&
+                        math.abs(animatedPosition.get().Y.Offset - secondTarget.Y.Offset) < thirdThreshold
+                    ) {
+                        // Destory complete coin instance
+                        //coins.set(coins.get().filter((c) => c !== newCoins[i]));
                     }
                 });
             }
@@ -107,11 +110,10 @@ function spawnCoins(position: UDim2, count: number): void {
     
         // Starte die erste Animation: von position zu targetPosition
         startState.set(targetPosition);
+        startTransparency.set(targetTransparency);
     
         newCoins.push({ position: animatedPosition, transparency: animatedTransparency });
     }
     
     coins.set([...coins.get(), ...newCoins]);
 }
-
-spawnCoins(UDim2.fromScale(0.5, 0.5), 5);

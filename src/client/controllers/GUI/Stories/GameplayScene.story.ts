@@ -3,18 +3,9 @@ import { RessourceDisplay } from "../UIComponents/ComplexComponents/RessourceDis
 import { RessourceContainer } from "../UIComponents/ComplexComponents/RessourceContainer";
 import { Workspace } from "@rbxts/services";
 
-const screenSize = Value(Workspace.CurrentCamera!.ViewportSize);
-
-// Update screenSize, wenn sich die Fenstergröße ändert
-Workspace.CurrentCamera!.GetPropertyChangedSignal("ViewportSize").Connect(() => {
-    screenSize.set(Workspace.CurrentCamera!.ViewportSize);
-});
-
 function story(target: Frame) {
     const cashAmount = Value(0);
-    const spawnCash = Value(5);
-
-    const screenSize = Value(UDim2.fromScale(1, 1));
+    const spawnCash = Value(0);
 
     const component = New("Frame")({
         Parent: target,
@@ -33,6 +24,8 @@ function story(target: Frame) {
             }),
         ],
     });
+
+    spawnCash.set(5);
 
     return () => {
         component.Destroy();

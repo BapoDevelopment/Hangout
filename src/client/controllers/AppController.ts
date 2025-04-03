@@ -12,8 +12,8 @@ export class AppController implements OnStart {
         const spawnCash = Value(0);
 
         Events.ressources.collectedCoins.connect((amount: number, partPosition: Vector3) => {
-            // Erhöhe den Cash-Wert um die neue Menge
             cashAmount.set(cashAmount.get() + amount);
+            spawnCash.set(amount);
         });
 
         const playerGUI = Players.LocalPlayer.FindFirstChild("PlayerGui");
