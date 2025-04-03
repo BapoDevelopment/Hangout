@@ -1,10 +1,11 @@
-import { Children, New, Value } from "@rbxts/fusion";
+import { Children, New, StateObject, Value } from "@rbxts/fusion";
 import { NumberText } from "../BaseComponents/NumberText";
 import { Icon } from "../BaseComponents/Icon";
 
 export interface IRessourceDisplay {
     Position: UDim2,
     Number: Value<number>;
+    Icon: StateObject<ContentId>;
 }
 
 export function RessourceDisplay(props: IRessourceDisplay) {
@@ -22,8 +23,8 @@ export function RessourceDisplay(props: IRessourceDisplay) {
                 TextColor3: Color3.fromRGB(208, 206, 206),
             }),
             Icon({
-                Position: UDim2.fromScale(0, 0),
-                Icon: "rbxassetid://117582891502895",
+                Position: Value(UDim2.fromScale(0, 0)),
+                Icon: props.Icon,
             }),
         ],
     })
