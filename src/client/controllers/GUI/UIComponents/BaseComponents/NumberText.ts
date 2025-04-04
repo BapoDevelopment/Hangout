@@ -1,11 +1,11 @@
-import { Computed, New, Value } from "@rbxts/fusion";
+import { Computed, New, StateObject, Value } from "@rbxts/fusion";
 
 export interface INumberText {
     Size?: UDim2;
     Position?: UDim2;
     TextXAlignment?: Enum.TextXAlignment
     TextColor3?: Color3;
-    Number: Value<number>;
+    Number: StateObject<number>;
 }
 
 export function NumberText(props: INumberText) {

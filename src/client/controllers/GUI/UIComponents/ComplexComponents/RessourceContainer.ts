@@ -1,117 +1,125 @@
-import { New, StateObject, Computed, Observer, Value, Children, ForValues, Spring } from "@rbxts/fusion";
-import { Icon } from "../BaseComponents/Icon";
+import { New, StateObject, Observer, Value, Children, ForValues, Tween } from "@rbxts/fusion";
+import { Icon, IIcon } from "../BaseComponents/Icon";
 
-interface RessourceData {
-    position: StateObject<UDim2>;
-    transparency: StateObject<number>;
-}
-
-let ressources = Value<RessourceData[]>([]);
+let ressources = Value<IIcon[]>([]);
 
 export interface IRessourceContainer {
-    Icon?: StateObject<ContentId>;
-    amount: Value<number>,
-    spawnPosition: UDim2,
-    targetPosition: UDim2,
-    radius?: number,
+	Icon?: StateObject<ContentId>;
+	amount: Value<number>;
+	spawnPosition: Value<UDim2>;
+	targetPosition: Value<UDim2>;
+	radius?: number;
+    DisplaySize?: Value<UDim2>;
+    DefaultDisplaySize?: UDim2;
+    TargetDisplaySize?: UDim2;
 }
 
 export function RessourceContainer(props: IRessourceContainer) {
-    const radius = props.radius ?? 50;
-    const observer = Observer(props.amount)
-    const disconnect = observer.onChange(() => {
-        if(props.amount.get() === 0) { return; }
-        spawnRessources(props.spawnPosition, props.targetPosition, radius, props.amount.get());
-        props.amount.set(0);
-    });
+	const radius = props.radius ?? 50;
+	const observer = Observer(props.amount);
+	observer.onChange(() => {
+		if (props.amount.get() === 0) {
+			return;
+		}
+		spawnRessources(props.spawnPosition
+            , props.targetPosition
+            , radius
+            , props.DisplaySize
+            , props.DefaultDisplaySize
+            , props.TargetDisplaySize
+            , props.amount.get());
+		props.amount.set(0);
+	});
 
-    return New("Frame")({
-        Name: "RessourceContainer",
-        BackgroundTransparency: 1,
-        Size: UDim2.fromScale(1, 1),
-        [Children]: ForValues(
-            ressources,
-            (ressource: RessourceData) => {
-                return Icon({
-                    Position: ressource.position,
-                    Icon: props.Icon,
-                    Transparency: ressource.transparency,
-                });
-            },
-            (instance) => instance.Destroy()
-        ),
-    });
+	return New("Frame")({
+		Name: "RessourceContainer",
+		BackgroundTransparency: 1,
+		Size: UDim2.fromScale(1, 1),
+		[Children]: ForValues(
+			ressources,
+			(ressource: IIcon) => {
+				return Icon({
+					Position: ressource.Position,
+					Icon: props.Icon,
+					Transparency: ressource.Transparency,
+				});
+			},
+			(instance) => instance.Destroy()
+		),
+	});
 }
 
-function spawnRessources(spawnPosition: UDim2, targetPosition: UDim2, radius: number, count: number): void {
-    const random = new Random();
-    const newRessources: RessourceData[] = [];
-    
-    for (let i = 0; i < count; i++) {
-        // Berechne einen zufälligen Winkel (0 bis 2π) und zufälligen Versatz (z. B. 0 bis 100 Pixel)
-        const angle = random.NextNumber(0, math.pi * 2);
-        const rad = random.NextNumber(0, radius * 2); // Jetzt abhängig von circleSize
-        
-        const offsetX = math.cos(angle) * rad;
-        const offsetY = math.sin(angle) * rad;
-    
-        // Zielposition der ersten Animation (zufälliger Offset)
-        const firstTargetPosition = new UDim2(
-            spawnPosition.X.Scale,
-            spawnPosition.X.Offset + offsetX,
-            spawnPosition.Y.Scale,
-            spawnPosition.Y.Offset + offsetY
-        );
-    
-        // Erstelle einen reaktiven Wert für die Startposition
-        const startState = Value(spawnPosition);
-        // Erzeuge zufällige Parameter für die Spring-Animation (erste Animation)
-        const frequency = random.NextNumber(25, 35);
-        const damping = random.NextNumber(0.8, 1.2);
-        const animatedPosition = Spring(startState, frequency, damping);
-    
-        // Erstelle einen reaktiven Wert für die Transparenz, initial 0 (sichtbar)
-        const startTransparency = Value(0);
-        const animatedTransparency = Spring(startTransparency, 35, 1);
-    
-        // Observer, der das Ende der ersten Animation detektiert:
-        const firstThreshold = 1.1;
-        const firstObserver = Observer(animatedPosition).onChange(() => {
-            if (
-                math.abs(animatedPosition.get().X.Offset - firstTargetPosition.X.Offset) < firstThreshold &&
-                math.abs(animatedPosition.get().Y.Offset - firstTargetPosition.Y.Offset) < firstThreshold
-            ) {
-                // Starte die zweite Animation: Setze als Ziel eine hardcodierte Position
-                startState.set(targetPosition);
-    
-                // Observer für die zweite Animation: Kurz vor Ende die Transparenz erhöhen
-                const secondThreshold = 15;
-                const secondObserver = Observer(animatedPosition).onChange(() => {
-                    if (
-                        math.abs(animatedPosition.get().X.Offset - targetPosition.X.Offset) < secondThreshold &&
-                        math.abs(animatedPosition.get().Y.Offset - targetPosition.Y.Offset) < secondThreshold
-                    ) {
-                        // Setze die Transparenz auf 1 (Fade-Out)
-                        startTransparency.set(1);
-                    }
-                });
-                const thirdThreshold = 1.1;
-                const thirdObserver = Observer(animatedPosition).onChange(() => {
-                    if (
-                        math.abs(animatedPosition.get().X.Offset - targetPosition.X.Offset) < thirdThreshold &&
-                        math.abs(animatedPosition.get().Y.Offset - targetPosition.Y.Offset) < thirdThreshold
-                    ) {
-                        ressources.set(ressources.get().filter((r) => r !== newRessources[i]));
-                        // Jetzt soll die Size von NumberText vergrößert werden.
-                    }
-                });
-            }
-        });
-    
-        // Starte die erste Animation: von position zu targetPosition
-        startState.set(firstTargetPosition);
-        newRessources.push({ position: animatedPosition, transparency: animatedTransparency });
-    }
-    
-    ressources.set([...ressources.get(), ...newRessources]);
+function spawnRessources(
+	spawnPosition: Value<UDim2>,
+	targetPosition: StateObject<UDim2>,
+	radius: number,
+	displaySize: Value<UDim2> | undefined,
+    defaultDisplaySize: UDim2 | undefined,
+    targetDisplaySize: UDim2 | undefined,
+	count: number
+): void {
+	const random = new Random();
+	const spreaded: Map<number, boolean> = new Map();
+	const transparentAt: Map<number, number> = new Map();
+	for (let i = 0; i < count; i++) {
+		transparentAt.set(i, math.random(1, 8));
+	}
+	for (let i = 0; i < count; i++) {
+		const angle = random.NextNumber(0, math.pi * 2);
+		const rad = random.NextNumber(0, radius * 2);
+
+		const offsetX = math.cos(angle) * rad;
+		const offsetY = math.sin(angle) * rad;
+
+		const firstTargetPosition = new UDim2(
+			spawnPosition.get().X.Scale,
+			spawnPosition.get().X.Offset + offsetX,
+			spawnPosition.get().Y.Scale,
+			spawnPosition.get().Y.Offset + offsetY
+		);
+
+		const firstPosition = Value(spawnPosition.get());
+		let animatedFirstPosition = Tween(firstPosition, new TweenInfo(0.25, Enum.EasingStyle.Quad));
+
+		const startTransparency = Value(0);
+		let animatedTransparency = Tween(startTransparency, new TweenInfo(0.1, Enum.EasingStyle.Quad));
+
+		const resource: IIcon = { Position: animatedFirstPosition, Transparency: animatedTransparency };
+		ressources.set([...ressources.get(), resource]);
+
+		firstPosition.set(firstTargetPosition);
+		const observer = Observer(animatedFirstPosition);
+		observer.onChange(() => {
+			if (animatedFirstPosition.get() === firstTargetPosition) {
+				spreaded.set(i, true);
+				firstPosition.set(targetPosition.get());
+			}
+
+			const threshold = transparentAt.get(i);
+			if (
+				spreaded.get(i) === true &&
+				threshold &&
+				math.abs(animatedFirstPosition.get().X.Offset - targetPosition.get().X.Offset) < threshold &&
+				math.abs(animatedFirstPosition.get().Y.Offset - targetPosition.get().Y.Offset) < threshold
+			) {
+				startTransparency.set(1);
+                if(displaySize && targetDisplaySize) {
+                    displaySize.set(targetDisplaySize);
+                }
+			}
+
+			if (animatedFirstPosition.get() === targetPosition.get()) {
+				ressources.set(ressources.get().filter((res) => res !== resource));
+                if(displaySize && defaultDisplaySize) {
+                    displaySize.set(defaultDisplaySize);
+                }
+			}
+		});
+
+		task.delay(0.75, () => {
+			if (ressources.get().includes(resource)) {
+				ressources.set(ressources.get().filter((res) => res !== resource));
+			}
+		});
+	}
 }
