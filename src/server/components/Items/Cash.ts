@@ -43,7 +43,7 @@ export class Cash extends AbstractToolBaseComponent<ICashAttributes, ICashCompon
     protected onProximityPromtActivated(player: Player): boolean {
         this.logger.Info(`Added ${this.attributes.Amount} to ${player.Name}.`);
 
-        this.cashService.collectedCoins(player, this);
+        let coinsCollected: boolean = this.cashService.collectedCoins(player, this);
 
         const pickup: Sound = this.instance.Handle.Pickup.Clone();
         pickup.Parent = player.Character;
@@ -53,7 +53,7 @@ export class Cash extends AbstractToolBaseComponent<ICashAttributes, ICashCompon
         });
 
         this.destroy();
-        return false;
+        return coinsCollected;
     }
 
     public isStackable(): boolean {

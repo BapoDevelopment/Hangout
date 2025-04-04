@@ -31,8 +31,11 @@ export class AppController implements OnStart {
             inset = inset ? inset : 0;
             const screenPosition = UDim2.fromOffset(screenPos.X, screenPos.Y + inset);
 
-            print(screenPosition + " pp: " + tostring(partPosition));
             ressourceSpawnPosition.set(screenPosition);
+        });
+
+        Events.ressources.setCash.connect((amount: number) => {
+            cashAmount.set(cashAmount.get() + amount);
         });
 
         const playerGUI = Players.LocalPlayer.FindFirstChild("PlayerGui");
