@@ -31,8 +31,9 @@ export function RessourceDisplay(props: IRessourceDisplay) {
                 TextColor3: Color3.fromRGB(208, 206, 206),
             }),
             Icon({
-                Position: Value(UDim2.fromScale(0.2, 0.5)),
+                Position: Value(UDim2.fromScale(0.15, 0.5)),
                 Icon: props.Icon,
+                Size: Value(UDim2.fromScale(1, 1)),
             }),
         ],
     });
