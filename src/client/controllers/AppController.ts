@@ -31,6 +31,7 @@ export class AppController implements OnStart {
                         Icon: Value("rbxassetid://117582891502895"),
                         amount: spawnCash,
                         spawnPosition: UDim2.fromScale(0.5, 0.5),
+                        targetPosition: UDim2.fromScale(0.8, 0.2),
                     }),
                 ],
             });

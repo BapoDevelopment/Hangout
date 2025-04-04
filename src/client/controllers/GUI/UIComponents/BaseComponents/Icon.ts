@@ -13,6 +13,7 @@ export function Icon(props: IIcon) {
         AnchorPoint: new Vector2(0.5, 0.5),
         Position: props.Position,
         Image: props.Icon,
+        ImageTransparency: props.Transparency,
         BackgroundTransparency: 1,
     });
 }

@@ -21,11 +21,14 @@ function story(target: Frame) {
                 Icon: Value("rbxassetid://117582891502895"),
                 amount: spawnCash,
                 spawnPosition: UDim2.fromScale(0.5, 0.5),
+                targetPosition: UDim2.fromScale(0.7, 0),
+                radius: 50,
             }),
         ],
     });
 
     spawnCash.set(5);
+    cashAmount.set(math.random(0, 999999));
 
     return () => {
         component.Destroy();
