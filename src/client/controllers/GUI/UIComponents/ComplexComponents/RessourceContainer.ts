@@ -8,26 +8,22 @@ export interface IRessourceContainer {
 	amount: Value<number>;
 	spawnPosition: Value<UDim2>;
 	targetPosition: Value<UDim2>;
-	radius?: number;
+	radius: number;
+    timeToPos: number;
+    transparencyTime: number;
+    transperentAtThreshold: Vector2;
     DisplaySize?: Value<UDim2>;
     DefaultDisplaySize?: UDim2;
     TargetDisplaySize?: UDim2;
 }
 
 export function RessourceContainer(props: IRessourceContainer) {
-	const radius = props.radius ?? 50;
 	const observer = Observer(props.amount);
 	observer.onChange(() => {
 		if (props.amount.get() === 0) {
 			return;
 		}
-		spawnRessources(props.spawnPosition
-            , props.targetPosition
-            , radius
-            , props.DisplaySize
-            , props.DefaultDisplaySize
-            , props.TargetDisplaySize
-            , props.amount.get());
+		spawnRessources(props);
 		props.amount.set(0);
 	});
 
@@ -49,40 +45,32 @@ export function RessourceContainer(props: IRessourceContainer) {
 	});
 }
 
-function spawnRessources(
-	spawnPosition: Value<UDim2>,
-	targetPosition: StateObject<UDim2>,
-	radius: number,
-	displaySize: Value<UDim2> | undefined,
-    defaultDisplaySize: UDim2 | undefined,
-    targetDisplaySize: UDim2 | undefined,
-	count: number
-): void {
+function spawnRessources(props: IRessourceContainer): void {
 	const random = new Random();
 	const spreaded: Map<number, boolean> = new Map();
 	const transparentAt: Map<number, number> = new Map();
-	for (let i = 0; i < count; i++) {
-		transparentAt.set(i, math.random(1, 8));
+	for (let i = 0; i < props.amount.get(); i++) {
+		transparentAt.set(i, math.random(props.transperentAtThreshold.X, props.transperentAtThreshold.Y));
 	}
-	for (let i = 0; i < count; i++) {
+	for (let i = 0; i < props.amount.get(); i++) {
 		const angle = random.NextNumber(0, math.pi * 2);
-		const rad = random.NextNumber(0, radius * 2);
+		const rad = random.NextNumber(0, props.radius * 2);
 
 		const offsetX = math.cos(angle) * rad;
 		const offsetY = math.sin(angle) * rad;
 
 		const firstTargetPosition = new UDim2(
-			spawnPosition.get().X.Scale,
-			spawnPosition.get().X.Offset + offsetX,
-			spawnPosition.get().Y.Scale,
-			spawnPosition.get().Y.Offset + offsetY
+			props.spawnPosition.get().X.Scale,
+			props.spawnPosition.get().X.Offset + offsetX,
+			props.spawnPosition.get().Y.Scale,
+			props.spawnPosition.get().Y.Offset + offsetY
 		);
 
-		const firstPosition = Value(spawnPosition.get());
-		let animatedFirstPosition = Tween(firstPosition, new TweenInfo(0.25, Enum.EasingStyle.Quad));
+		const firstPosition = Value(props.spawnPosition.get());
+		let animatedFirstPosition = Tween(firstPosition, new TweenInfo(props.timeToPos, Enum.EasingStyle.Quad));
 
 		const startTransparency = Value(0);
-		let animatedTransparency = Tween(startTransparency, new TweenInfo(0.1, Enum.EasingStyle.Quad));
+		let animatedTransparency = Tween(startTransparency, new TweenInfo(props.transparencyTime, Enum.EasingStyle.Quad));
 
 		const resource: IIcon = { Position: animatedFirstPosition, Transparency: animatedTransparency };
 		ressources.set([...ressources.get(), resource]);
@@ -92,31 +80,31 @@ function spawnRessources(
 		observer.onChange(() => {
 			if (animatedFirstPosition.get() === firstTargetPosition) {
 				spreaded.set(i, true);
-				firstPosition.set(targetPosition.get());
+				firstPosition.set(props.targetPosition.get());
 			}
 
 			const threshold = transparentAt.get(i);
 			if (
 				spreaded.get(i) === true &&
 				threshold &&
-				math.abs(animatedFirstPosition.get().X.Offset - targetPosition.get().X.Offset) < threshold &&
-				math.abs(animatedFirstPosition.get().Y.Offset - targetPosition.get().Y.Offset) < threshold
+				math.abs(animatedFirstPosition.get().X.Offset - props.targetPosition.get().X.Offset) < threshold &&
+				math.abs(animatedFirstPosition.get().Y.Offset - props.targetPosition.get().Y.Offset) < threshold
 			) {
 				startTransparency.set(1);
-                if(displaySize && targetDisplaySize) {
-                    displaySize.set(targetDisplaySize);
+                if(props.DisplaySize && props.TargetDisplaySize) {
+                    props.DisplaySize.set(props.TargetDisplaySize);
                 }
 			}
 
-			if (animatedFirstPosition.get() === targetPosition.get()) {
+			if (animatedFirstPosition.get() === props.targetPosition.get()) {
 				ressources.set(ressources.get().filter((res) => res !== resource));
-                if(displaySize && defaultDisplaySize) {
-                    displaySize.set(defaultDisplaySize);
+                if(props.DisplaySize && props.DefaultDisplaySize) {
+                    props.DisplaySize.set(props.DefaultDisplaySize);
                 }
 			}
 		});
 
-		task.delay(0.75, () => {
+		task.delay((props.timeToPos * 2) * 1.1, () => {
 			if (ressources.get().includes(resource)) {
 				ressources.set(ressources.get().filter((res) => res !== resource));
 			}

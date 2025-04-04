@@ -2,7 +2,7 @@ import { Computed, New, StateObject, Value } from "@rbxts/fusion";
 
 export interface INumberText {
     Size?: UDim2;
-    Position?: UDim2;
+    Position?: Computed<UDim2>;
     TextXAlignment?: Enum.TextXAlignment
     TextColor3?: Color3;
     Number: StateObject<number>;
@@ -15,6 +15,7 @@ export function NumberText(props: INumberText) {
         Size: props.Size,
         Position: props.Position,
         TextColor3: props.TextColor3,
+        BackgroundTransparency: 1,
         Text: Computed(() => {
             return tostring(formatNumber(props.Number.get()))
         }),
