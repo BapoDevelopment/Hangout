@@ -1,6 +1,13 @@
 import { ReplicaServer } from "@rbxts/mad-replica";
 import { Players } from "@rbxts/services";
 
+interface PlayerData {
+    Score: number,
+    Nested: {
+        Value: boolean,
+    }
+}
+
 Players.PlayerAdded.Connect((player: Player) => {
 
     let replica = ReplicaServer.New({
@@ -18,11 +25,11 @@ Players.PlayerAdded.Connect((player: Player) => {
     task.spawn(() => {
         let tempVar: number = 100;
         while(true) {
-            replica.Set(["Score"] as unknown as never, tempVar as never);
+            replica.Set(["Score"] as unknown as never, ((replica.Data as PlayerData).Score + 100) as never);
             tempVar += 100;
             task.wait(1);
         }
     });
 
-    //replica.Set("Nested" as never, true as never);
+    replica.Set(["Value"] as unknown as never, true as never);
 });
