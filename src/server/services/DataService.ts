@@ -4,9 +4,25 @@ import { ProfileStoreService } from "./ProfileStoreService";
 import { Players } from "@rbxts/services";
 
 @Service()
-export class DatabaseService {
+export class DataService implements OnStart{
 
     constructor(private profileStoreService: ProfileStoreService, private readonly logger: Logger) {}
+
+    onStart(): void {
+        this.logger.Info("Initialise DataService");
+
+        Players.GetPlayers().forEach((player) => {
+            task.spawn(() => {
+                this.onPlayerAdded(player);
+            })
+        })
+
+        Players.PlayerAdded.Connect((player) => {
+            this.onPlayerAdded(player);
+        });
+
+        this.logger.Info("Initialised DataService");
+    }
 
     public addCash(player: Player, amount: number): boolean {
         return this.profileStoreService.increaseProfileField(player, "Cash", amount);
@@ -19,5 +35,9 @@ export class DatabaseService {
     public getCash(player: Player): number {
         const value: number | undefined = this.profileStoreService.getProfileField(player, "Cash");
         return value ? value : 0;
+    }
+
+    private onPlayerAdded(player: Player): void {
+        this.logger.Info("A");
     }
 }

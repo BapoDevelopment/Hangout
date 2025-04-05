@@ -27,6 +27,7 @@
     "@rbxts/compiler-types": "^3.0.0-types.0",
     "@rbxts/fusion": "^0.2.0",
     "@rbxts/log": "^0.6.3",
+    "@rbxts/mad-replica": "^1.0.3",
     "@rbxts/profile-store": "^1.0.3",
     "@rbxts/types": "^1.0.813",
     "@rbxts/zone-plus": "^3.2.0"
