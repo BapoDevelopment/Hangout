@@ -1,35 +1,41 @@
 import { ReplicaServer } from "@rbxts/mad-replica";
 import { Players } from "@rbxts/services";
 
-interface PlayerData {
-    Score: number,
-    Nested: {
-        Value: boolean,
+declare global {
+    interface Replicas {
+        PlayerData: {
+            Data: {
+                Score: number;
+                Nested: {
+                    Value: boolean;
+                };
+            };
+            Tags: {};
+        };
     }
 }
 
 Players.PlayerAdded.Connect((player: Player) => {
-
-    let replica = ReplicaServer.New({
-        Token: ReplicaServer.Token("GlobalData" as unknown as never),
+    const replica = ReplicaServer.New({
+        Token: ReplicaServer.Token("PlayerData"),
         Data: {
             Score: 50,
             Nested: {
                 Value: false,
             },
-        } as unknown as undefined,
+        },
     });
 
     replica.Replicate();
 
     task.spawn(() => {
-        let tempVar: number = 100;
-        while(true) {
-            replica.Set(["Score"] as unknown as never, ((replica.Data as PlayerData).Score + 100) as never);
+        let tempVar = 100;
+        while (true) {
+            replica.Set(["Score"], replica.Data.Score + 100);
             tempVar += 100;
             task.wait(1);
         }
     });
 
-    replica.Set(["Value"] as unknown as never, true as never);
+    replica.Set(["Nested", "Value"], false);
 });

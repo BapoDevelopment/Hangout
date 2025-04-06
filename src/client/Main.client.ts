@@ -1,6 +1,6 @@
 import { ReplicaClient } from "@rbxts/mad-replica";
 
-ReplicaClient.OnNew("GlobalData" as unknown as never, (replica) => {
+ReplicaClient.OnNew("PlayerData" as unknown as never, (replica) => {
     
     print(`Replica received client-side! Data:`, replica.Data);
 
