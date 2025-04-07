@@ -19,7 +19,6 @@ export class CashService implements OnStart{
 
     public collectedCoins(player: Player, cash: Cash): boolean {
         if(cash.instance.PrimaryPart) {
-            this.logger.Warn("A");
             this.replicaService.setCashPartPosition(player.UserId, cash.instance.PrimaryPart?.Position);
         }
         return this.addCash(player, cash.attributes.Amount);

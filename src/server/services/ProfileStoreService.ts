@@ -35,7 +35,8 @@ export class ProfileStoreService implements OnInit {
 	private DataStoreName = RunService.IsStudio() ? "DevelopmentPlayerStore" : "ProductionPlayerStore";
 	private PlayerStore = ProfileStore.New(this.DataStoreName, this.DEFAULT_PLAYER_DATA);
 	private Profiles = new Map<number, ProfileStoreType>;
-	
+	private readonly REPLICA_TOKEN = ReplicaServer.Token("PlayerData");
+
 	constructor(private replicaService: ReplicaService, private readonly logger: Logger) {}
 
 	onInit(): void {
@@ -200,7 +201,7 @@ export class ProfileStoreService implements OnInit {
 		if(!profile) { return; }
 
 		const replica = ReplicaServer.New({
-			Token: ReplicaServer.Token("PlayerData"),
+			Token: this.REPLICA_TOKEN,
 			Data: {
 				Cash: {
 					Amount: profile.Data.Cash,
@@ -211,7 +212,7 @@ export class ProfileStoreService implements OnInit {
 	
 		this.replicaService.setReplica(player.UserId, replica);
 
-		replica.Replicate();
+		replica.Subscribe(player);
 	}
 
 	private replicateState<T extends keyof IProfileTemplate>(player: Player, field: T, newVal: any): boolean {
