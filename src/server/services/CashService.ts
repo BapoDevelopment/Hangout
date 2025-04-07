@@ -3,10 +3,11 @@ import { Logger } from "@rbxts/log/out/Logger";
 import { Cash } from "server/components/Items/Cash";
 import { Events } from "server/network";
 import { DataService } from "./DataService";
+import { ReplicaService } from "./ReplicaService";
 
 @Service()
 export class CashService implements OnStart{
-    constructor(private dataBaseService: DataService, private readonly logger: Logger) {}
+    constructor(private dataBaseService: DataService, private replicaService: ReplicaService, private readonly logger: Logger) {}
     
     onStart(): void {
         this.logger.Debug("CashService initialised.")
@@ -17,6 +18,10 @@ export class CashService implements OnStart{
     }
 
     public collectedCoins(player: Player, cash: Cash): boolean {
+        if(cash.instance.PrimaryPart) {
+            this.logger.Warn("A");
+            this.replicaService.setCashPartPosition(player.UserId, cash.instance.PrimaryPart?.Position);
+        }
         return this.addCash(player, cash.attributes.Amount);
     }
 

@@ -4,12 +4,16 @@ import ProfileStore, { Profile } from "@rbxts/profile-store";
 import { Players, RunService } from "@rbxts/services";
 import { DataService } from "./DataService";
 import { Replica, ReplicaServer } from "@rbxts/mad-replica";
+import { ReplicaService } from "./ReplicaService";
 
 declare global {
     interface Replicas {
         PlayerData: {
             Data: {
-                Cash: number;
+				Cash: {
+					Amount: number;
+					PartPosition: Vector3;
+				}
             };
             Tags: {};
         };
@@ -31,9 +35,8 @@ export class ProfileStoreService implements OnInit {
 	private DataStoreName = RunService.IsStudio() ? "DevelopmentPlayerStore" : "ProductionPlayerStore";
 	private PlayerStore = ProfileStore.New(this.DataStoreName, this.DEFAULT_PLAYER_DATA);
 	private Profiles = new Map<number, ProfileStoreType>;
-	private Replicas = new Map<number, Replica>;
-
-	constructor(private readonly logger: Logger) {}
+	
+	constructor(private replicaService: ReplicaService, private readonly logger: Logger) {}
 
 	onInit(): void {
 		this.logger.Debug("Initialise ProfileStoreService");
@@ -199,22 +202,25 @@ export class ProfileStoreService implements OnInit {
 		const replica = ReplicaServer.New({
 			Token: ReplicaServer.Token("PlayerData"),
 			Data: {
-				Cash: profile.Data.Cash,
+				Cash: {
+					Amount: profile.Data.Cash,
+					PartPosition: new Vector3(0, 0, 0),
+				}
 			},
 		});
 	
-		this.Replicas.set(player.UserId, replica);
+		this.replicaService.setReplica(player.UserId, replica);
 
 		replica.Replicate();
 	}
 
 	private replicateState<T extends keyof IProfileTemplate>(player: Player, field: T, newVal: any): boolean {
-		const replica: Replica | undefined = this.Replicas.get(player.UserId);
+		const replica: Replica | undefined = this.replicaService.getReplica(player.UserId);
 		if(!replica) { return false; }
 
 		switch (tostring(field)) {
 			case "Cash":
-				replica.Set(["Cash"], newVal);
+				replica.Set(["Cash", "Amount"], newVal);
 				return true;
 		
 			default:

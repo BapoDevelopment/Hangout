@@ -10,7 +10,10 @@ declare global {
     interface Replicas {
         PlayerData: {
             Data: {
-                Cash: number;
+				Cash: {
+					Amount: number;
+					PartPosition: Vector3;
+				}
             };
             Tags: {};
         };
@@ -81,15 +84,15 @@ export class AppController implements OnStart {
         }
 
         ReplicaClient.OnNew("PlayerData", (replica) => {
-            cashAmount.set(replica.Data.Cash);
-            replica.OnSet(["Cash"], (new_value, old_value) => {
+            cashAmount.set(replica.Data.Cash.Amount);
+            replica.OnSet(["Cash", "Amount"], (new_value, old_value) => {
                 cashAmount.set(new_value);
                 const deltaCash: number = new_value - old_value;
                 if (deltaCash > 0) {
 
                     const camera = Workspace.CurrentCamera;
                     if (!camera) return;
-                    const [screenPos, onScreen] = camera.WorldToScreenPoint(partPosition);
+                    const [screenPos, onScreen] = camera.WorldToScreenPoint(replica.Data.Cash.PartPosition);
                     if (!onScreen) return;
                     let inset = GuiService.GetGuiInset()[0].Y;
                     inset = inset ? inset : 0;

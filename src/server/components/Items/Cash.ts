@@ -39,14 +39,7 @@ export class Cash extends AbstractToolBaseComponent<ICashAttributes, ICashCompon
         });
     }
     
-    onStart(): void {
-        const replica = ReplicaServer.New({
-            Token: ReplicaServer.Token("PlayerData"),
-            Data: {
-                Cash: profile.Data.Cash,
-            },
-        });
-    }
+    onStart(): void {}
 
     protected onProximityPromtActivated(player: Player): boolean {
         this.logger.Info(`Added ${this.attributes.Amount} to ${player.Name}.`);
