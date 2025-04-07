@@ -17,9 +17,6 @@ export class CashService implements OnStart{
     }
 
     public collectedCoins(player: Player, cash: Cash): boolean {
-        if(cash.instance.PrimaryPart !== undefined) {
-            Events.ressources.collectedCoins(player, cash.attributes.Amount, cash.instance.PrimaryPart.Position);
-        }
         return this.addCash(player, cash.attributes.Amount);
     }
 

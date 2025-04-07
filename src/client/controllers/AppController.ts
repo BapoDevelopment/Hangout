@@ -4,6 +4,18 @@ import { GuiService, Players, Workspace } from "@rbxts/services";
 import { RessourceDisplay } from "./GUI/UIComponents/ComplexComponents/RessourceDisplay";
 import { Events } from "client/network";
 import { RessourceContainer } from "./GUI/UIComponents/ComplexComponents/RessourceContainer";
+import { Replica, ReplicaClient } from "@rbxts/mad-replica";
+
+declare global {
+    interface Replicas {
+        PlayerData: {
+            Data: {
+                Cash: number;
+            };
+            Tags: {};
+        };
+    }
+}
 
 @Controller()
 export class AppController implements OnStart {
@@ -19,7 +31,7 @@ export class AppController implements OnStart {
         const targetDisplaySize = UDim2.fromScale(0.2, 0.1);
         const ressourceSpawnPosition = Value(UDim2.fromScale(0.5, 0.5));
         
-        Events.ressources.collectedCoins.connect((amount: number, partPosition: Vector3) => {
+        /*Events.ressources.collectedCoins.connect((amount: number, partPosition: Vector3) => {
             cashAmount.set(cashAmount.get() + amount);
             spawnCash.set(amount);
 
@@ -36,7 +48,7 @@ export class AppController implements OnStart {
 
         Events.ressources.setCash.connect((amount: number) => {
             cashAmount.set(cashAmount.get() + amount);
-        });
+        });*/
 
         const playerGUI = Players.LocalPlayer.FindFirstChild("PlayerGui");
         if (playerGUI) {
@@ -56,7 +68,7 @@ export class AppController implements OnStart {
                         amount: spawnCash,
                         spawnPosition: ressourceSpawnPosition,
                         targetPosition: Value(UDim2.fromScale(0.90, 0.05)),
-                        timeToPos: 0.5,
+                        timeToPos: 0.25,
                         transparencyTime: 0.1,
                         transperentAtThreshold: new Vector2(1, 8),
                         radius: 50,
@@ -67,5 +79,27 @@ export class AppController implements OnStart {
                 ],
             });
         }
+
+        ReplicaClient.OnNew("PlayerData", (replica) => {
+            cashAmount.set(replica.Data.Cash);
+            replica.OnSet(["Cash"], (new_value, old_value) => {
+                cashAmount.set(new_value);
+                const deltaCash: number = new_value - old_value;
+                if (deltaCash > 0) {
+
+                    const camera = Workspace.CurrentCamera;
+                    if (!camera) return;
+                    const [screenPos, onScreen] = camera.WorldToScreenPoint(partPosition);
+                    if (!onScreen) return;
+                    let inset = GuiService.GetGuiInset()[0].Y;
+                    inset = inset ? inset : 0;
+                    const screenPosition = UDim2.fromOffset(screenPos.X, screenPos.Y + inset);
+        
+                    ressourceSpawnPosition.set(screenPosition);
+                    spawnCash.set(deltaCash);
+                }
+            });
+        });
+        ReplicaClient.RequestData();
     }
 }

@@ -16,12 +16,7 @@ interface ClientToServerEvents {
     }
 }
 
-interface ServerToClientEvents {
-    ressources: {
-        collectedCoins(amount: number, pos: Vector3): void;
-        setCash(amount: number): void;
-    }
-}
+interface ServerToClientEvents {}
 
 interface ClientToServerFunctions {}
 

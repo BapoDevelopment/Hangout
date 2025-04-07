@@ -5,6 +5,7 @@ import { AbstractToolBaseComponent, IToolAttributes, IToolComponent } from "./To
 import { ToolService } from "server/services/ToolService";
 import { AudioService } from "server/services/AudioService";
 import { CashService } from "server/services/CashService";
+import { ReplicaServer } from "@rbxts/mad-replica";
 
 interface ICashComponent extends IToolComponent {
     Handle: MeshPart & {
@@ -38,7 +39,14 @@ export class Cash extends AbstractToolBaseComponent<ICashAttributes, ICashCompon
         });
     }
     
-    onStart(): void {}
+    onStart(): void {
+        const replica = ReplicaServer.New({
+            Token: ReplicaServer.Token("PlayerData"),
+            Data: {
+                Cash: profile.Data.Cash,
+            },
+        });
+    }
 
     protected onProximityPromtActivated(player: Player): boolean {
         this.logger.Info(`Added ${this.attributes.Amount} to ${player.Name}.`);

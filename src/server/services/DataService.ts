@@ -1,7 +1,6 @@
 import { Service, OnStart } from "@flamework/core";
 import type { Logger } from "@rbxts/log/out/Logger";
 import { ProfileStoreService } from "./ProfileStoreService";
-import { Players } from "@rbxts/services";
 
 @Service()
 export class DataService implements OnStart{
@@ -11,33 +10,19 @@ export class DataService implements OnStart{
     onStart(): void {
         this.logger.Info("Initialise DataService");
 
-        Players.GetPlayers().forEach((player) => {
-            task.spawn(() => {
-                this.onPlayerAdded(player);
-            })
-        })
-
-        Players.PlayerAdded.Connect((player) => {
-            this.onPlayerAdded(player);
-        });
-
         this.logger.Info("Initialised DataService");
     }
 
     public addCash(player: Player, amount: number): boolean {
-        return this.profileStoreService.increaseProfileField(player, "Cash", amount);
+        return this.profileStoreService.increaseProfileField(player, "Cash", amount, true);
     }
 
     public subCash(player: Player, amount: number): boolean {
-        return this.profileStoreService.decreaseProfileField(player, "Cash", amount);
+        return this.profileStoreService.decreaseProfileField(player, "Cash", amount, true);
     }
 
     public getCash(player: Player): number {
         const value: number | undefined = this.profileStoreService.getProfileField(player, "Cash");
         return value ? value : 0;
-    }
-
-    private onPlayerAdded(player: Player): void {
-        this.logger.Info("A");
     }
 }

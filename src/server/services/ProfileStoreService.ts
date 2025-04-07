@@ -2,6 +2,19 @@ import { Service, OnStart, OnInit } from "@flamework/core";
 import type { Logger } from "@rbxts/log/out/Logger";
 import ProfileStore, { Profile } from "@rbxts/profile-store";
 import { Players, RunService } from "@rbxts/services";
+import { DataService } from "./DataService";
+import { Replica, ReplicaServer } from "@rbxts/mad-replica";
+
+declare global {
+    interface Replicas {
+        PlayerData: {
+            Data: {
+                Cash: number;
+            };
+            Tags: {};
+        };
+    }
+}
 
 interface IProfileTemplate {
 	Cash: number,
@@ -18,6 +31,7 @@ export class ProfileStoreService implements OnInit {
 	private DataStoreName = RunService.IsStudio() ? "DevelopmentPlayerStore" : "ProductionPlayerStore";
 	private PlayerStore = ProfileStore.New(this.DataStoreName, this.DEFAULT_PLAYER_DATA);
 	private Profiles = new Map<number, ProfileStoreType>;
+	private Replicas = new Map<number, Replica>;
 
 	constructor(private readonly logger: Logger) {}
 
@@ -58,6 +72,7 @@ export class ProfileStoreService implements OnInit {
 
 			if(player.Parent === Players) {
 				this.Profiles.set(player.UserId, profile);
+				this.initReplica(player);
 				this.logger.Info(`Profile loaded for ${player.DisplayName}`);
 			} else {
 				profile.EndSession();
@@ -82,7 +97,7 @@ export class ProfileStoreService implements OnInit {
 		return profile.Data[field];
 	}
 
-	public updateProfileField<T extends keyof IProfileTemplate>(player: Player, field: T, newValue: unknown): boolean {
+	public updateProfileField<T extends keyof IProfileTemplate>(player: Player, field: T, newValue: unknown, replicate: boolean): boolean {
 		const profile = this.Profiles.get(player.UserId);
 		if (!profile) {
 			this.logger.Warn(`Profile not found for ${player.DisplayName}`);
@@ -104,13 +119,19 @@ export class ProfileStoreService implements OnInit {
 
 		profile.Data[field] = newValue as IProfileTemplate[T];
 		this.logger.Info(`Profile field "${field}" updated for ${player.DisplayName}`);
+
+		if(replicate) {
+			this.replicateState(player, field, newValue);
+		}
+
 		return true;
 	}
 
 	public increaseProfileField<T extends keyof IProfileTemplate>(
 		player: Player,
 		field: T,
-		increaseValue: unknown
+		increaseValue: unknown,
+		replicate: boolean
 	): boolean {
 		const currentValue = this.getProfileField(player, field);
 		if (currentValue === undefined) {
@@ -130,7 +151,7 @@ export class ProfileStoreService implements OnInit {
 	
 		if (typeOf(currentValue) === "number" && typeOf(increaseValue) === "number") {
 			const newValue = currentValue + (increaseValue as number);
-			return this.updateProfileField(player, field, newValue as IProfileTemplate[T]);
+			return this.updateProfileField(player, field, newValue as IProfileTemplate[T], replicate);
 		} else {
 			this.logger.Warn(`Cannot add values of type ${currentType}`);
 		}
@@ -140,7 +161,8 @@ export class ProfileStoreService implements OnInit {
 	public decreaseProfileField<T extends keyof IProfileTemplate>(
 		player: Player,
 		field: T,
-		increaseValue: unknown
+		increaseValue: unknown,
+		replicate: boolean,
 	): boolean {
 		const currentValue = this.getProfileField(player, field);
 		if (currentValue === undefined) {
@@ -160,10 +182,45 @@ export class ProfileStoreService implements OnInit {
 	
 		if (typeOf(currentValue) === "number" && typeOf(increaseValue) === "number") {
 			const newValue = currentValue - (increaseValue as number);
-			return this.updateProfileField(player, field, newValue as IProfileTemplate[T]);
+			return this.updateProfileField(player, field, newValue as IProfileTemplate[T], replicate);
 		} else {
 			this.logger.Warn(`Cannot subtract values of type ${currentType}`);
 		}
+		return false;
+	}
+
+	private initReplica(player: Player) {
+		if(!player) { return; }
+		if(player.Parent !== Players) { return; }
+
+		const profile = this.Profiles.get(player.UserId)
+		if(!profile) { return; }
+
+		const replica = ReplicaServer.New({
+			Token: ReplicaServer.Token("PlayerData"),
+			Data: {
+				Cash: profile.Data.Cash,
+			},
+		});
+	
+		this.Replicas.set(player.UserId, replica);
+
+		replica.Replicate();
+	}
+
+	private replicateState<T extends keyof IProfileTemplate>(player: Player, field: T, newVal: any): boolean {
+		const replica: Replica | undefined = this.Replicas.get(player.UserId);
+		if(!replica) { return false; }
+
+		switch (tostring(field)) {
+			case "Cash":
+				replica.Set(["Cash"], newVal);
+				return true;
+		
+			default:
+				break;
+		}
+
 		return false;
 	}
 }
