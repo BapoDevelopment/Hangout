@@ -39,6 +39,7 @@ export class LockedDoor extends SuperDoor<IDoorAttributes, ILockedDoorComponent>
         super();
         this.audioService = audioService;
         this.gameService = gameService;
+        this.obliterator.Add(this.instance);
     }
 
     onStart() {
@@ -52,7 +53,7 @@ export class LockedDoor extends SuperDoor<IDoorAttributes, ILockedDoorComponent>
         promt.MaxActivationDistance = 5;
         promt.Parent = this.instance.Build.Leaf.Lock.Attachment;
 
-        promt.Triggered.Connect((player) => {
+        this.obliterator.Add(promt.Triggered.Connect((player) => {
             const key: Tool | undefined = player.Character?.FindFirstChild("Key") as Tool;
             const lockpick: Tool | undefined = player.Character?.FindFirstChild("Lockpick") as Tool;
             if(key) {
@@ -75,6 +76,11 @@ export class LockedDoor extends SuperDoor<IDoorAttributes, ILockedDoorComponent>
                 }
                 super.openByPlayer(player);
             }
-        });
+        }));
+    }
+
+    public destroy(): void {
+        super.destroy();
+        this.obliterator.Cleanup();
     }
 }

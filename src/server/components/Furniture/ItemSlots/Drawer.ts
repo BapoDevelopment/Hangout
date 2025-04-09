@@ -4,6 +4,7 @@ import { Logger } from "@rbxts/log/out/Logger";
 import { TweenService } from "@rbxts/services"
 import { AudioService } from "server/services/AudioService";
 import { Slot } from "./Slot";
+import { Janitor } from "@rbxts/janitor";
 
 enum DrawerState {
     OPEN = "OPEN",
@@ -39,9 +40,11 @@ interface IDrawerComponent extends Instance {
 })
 export class Drawer extends BaseComponent <{}, IDrawerComponent> implements OnStart {
 
+    protected obliterator = new Janitor();
+    
     private topState: DrawerState = DrawerState.CLOSED;
     private bottomState: DrawerState = DrawerState.CLOSED;
-
+    
     private slots: Slot[] = new Array<Slot>();
 
     constructor(private audioService: AudioService, private readonly logger: Logger) {
@@ -54,16 +57,18 @@ export class Drawer extends BaseComponent <{}, IDrawerComponent> implements OnSt
         components.waitForComponent<Slot>(this.instance.BottomDraw.Plate).then((slotComponent) => {
             this.slots.push(slotComponent);
         });
+
+        this.obliterator.Add(this.instance);
     }
 
     onStart(): void {
-        this.instance.TopDraw.Knob.Toggle.ProximityPrompt.Triggered.Connect((player) => {
+        this.obliterator.Add(this.instance.TopDraw.Knob.Toggle.ProximityPrompt.Triggered.Connect((player) => {
             this.open(player, "TOP_DRAWER", this.instance.TopDraw);
-        });
+        }), "Disconnect");
 
-        this.instance.BottomDraw.Knob.Toggle.ProximityPrompt.Triggered.Connect((player) => {
+        this.obliterator.Add(this.instance.BottomDraw.Knob.Toggle.ProximityPrompt.Triggered.Connect((player) => {
             this.open(player, "BOTTOM_DRAWER", this.instance.BottomDraw);
-        });
+        }), "Disconnect");
     }
 
     private open(player: Player, drawerIdentifier: string, model: Model): void {
@@ -89,7 +94,8 @@ export class Drawer extends BaseComponent <{}, IDrawerComponent> implements OnSt
             CFrame: model.PrimaryPart.CFrame.mul(new CFrame(0, 0, 1.5 * direction))
         }
         const tween = TweenService.Create(model.PrimaryPart, tweenInfo, targetProperties);
-        tween.Completed.Connect(() => {
+        this.obliterator.Add(tween);
+        this.obliterator.Add(tween.Completed.Connect(() => {
             if(previousState === DrawerState.OPEN) {
                 if(drawerIdentifier === "TOP_DRAWER") {
                     this.topState = DrawerState.CLOSED;
@@ -103,7 +109,7 @@ export class Drawer extends BaseComponent <{}, IDrawerComponent> implements OnSt
                     this.bottomState = DrawerState.OPEN;
                 }
             }
-        });
+        }), "Disconnect");
 
         tween.Play();
         this.audioService.playSound(this.instance.Primary.move);
@@ -123,6 +129,6 @@ export class Drawer extends BaseComponent <{}, IDrawerComponent> implements OnSt
 
     public destroy(): void {
         super.destroy();
-        this.instance.Destroy();
+        this.obliterator.Cleanup();
     }
 }

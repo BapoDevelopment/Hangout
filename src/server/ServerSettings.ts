@@ -2,9 +2,9 @@ import { SharedSettings } from "shared/SharedSettings";
 
 export const ServerSettings = {
     GAME: {
-        START_ROOMS: 5,
+        START_ROOMS: 2,
         TOTAL_ROOMS: 100,
-        MAX_ACTIVE_ROOMS: 10,
+        MAX_ACTIVE_ROOMS: 5,
         LAST_ROOM: 100,
         DEFAULT_WALKSPEED: 16,
     },
@@ -69,7 +69,7 @@ export const ServerSettings = {
             }
         },
         CASH: {
-            CATEGORY_SPAWN_RATE_IN_PERCENT: 100,
+            CATEGORY_SPAWN_RATE_IN_PERCENT: 0,
             5: {
                 SPAWN_RATE_IN_PERCENT: 100,
             },

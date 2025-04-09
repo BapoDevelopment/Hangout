@@ -34,17 +34,16 @@ export class Vitamins extends AbstractToolBaseComponent<IVitaminsAttributes, IVi
     constructor(protected audioService: AudioService, protected toolService: ToolService, protected readonly logger: Logger) {
         super(toolService, logger);
 
-        this.instance.Handle.ProximityPrompt.Triggered.Connect((player) => {
+        this.obliterator.Add(this.instance.Handle.ProximityPrompt.Triggered.Connect((player) => {
             this.onProximityPromtActivated(player);
-        });
-
+        }), "Disconnect");
 
         this.setStackable(ServerSettings.ITEMS.TOOLS.VITAMINS.STACKABLE);
+
+        this.obliterator.Add(this.instance);
     }
     
-    onStart(): void {
-
-    }
+    onStart(): void {}
 
     protected onProximityPromtActivated(player: Player): boolean {
         if(super.getPlayerTool(player, "Vitamins") !== undefined) {
@@ -61,6 +60,7 @@ export class Vitamins extends AbstractToolBaseComponent<IVitaminsAttributes, IVi
         this.activateConnection = Events.items.vitamins.clickedEvent.connect((player) => {
             this.onActivated(player);
         });
+        this.obliterator.Add(this.activateConnection);
 
         return vitaminsEquipped;
     }
@@ -101,7 +101,7 @@ export class Vitamins extends AbstractToolBaseComponent<IVitaminsAttributes, IVi
                     player.Character.SetAttribute("LastVitaminsActivated", os.time());
                 }
             }
-        })
+        });
 
         this.attributes.stack -= 1;
         if(this.attributes.stack <= 0) {
@@ -142,9 +142,6 @@ export class Vitamins extends AbstractToolBaseComponent<IVitaminsAttributes, IVi
 
     destroy(): void {
         super.destroy();
-        if(this.activateConnection) {
-            this.activateConnection.Disconnect();
-        }
-        this.instance.Destroy();
+        this.obliterator.Cleanup();
     }
 }

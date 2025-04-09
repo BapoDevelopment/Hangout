@@ -39,6 +39,7 @@ export class Wardrobe extends HidingSpot <{}, IWardrobeComponent> implements OnS
 
     constructor(private audioService: AudioService, private collisionGroupService: CollisionGroupService, protected readonly logger: Logger) {
         super();
+        this.obliterator.Add(this.instance);
     }
 
     onStart(): void {
@@ -50,6 +51,7 @@ export class Wardrobe extends HidingSpot <{}, IWardrobeComponent> implements OnS
                 this.exitPlayer(player);
             }
         });
+        this.obliterator.Add(this.leaveHidingSpotConnection, "Disconnect");
         this.createProximityPromt(this.instance.Primary.Toggle);
     }
 
@@ -70,6 +72,7 @@ export class Wardrobe extends HidingSpot <{}, IWardrobeComponent> implements OnS
                 this.closeWardrobe();
             }
         });
+        this.obliterator.Add(this.characterLeaveHidingConnection, "Disconnect");
 
         const humanoid: Humanoid | undefined = player.Character.FindFirstChild("Humanoid") as Humanoid;
         if(humanoid) {
@@ -90,29 +93,29 @@ export class Wardrobe extends HidingSpot <{}, IWardrobeComponent> implements OnS
         //Move Player
         const playerMovedToEntrance: RBXScriptSignal | undefined = this.moveCharacterToMarkerCFrame(player.Character, this.instance.Markers.Entrance.CFrame, 0.18);
         if(playerMovedToEntrance === undefined) { this.closeWardrobe(); return; }
-        playerMovedToEntrance.Connect(() => {
+        this.obliterator.Add(playerMovedToEntrance.Connect(() => {
             if(!player.Character) { this.closeWardrobe(); return; }
 
             const playerMovedToSpot: RBXScriptSignal | undefined = this.moveCharacterToMarkerCFrame(player.Character, this.instance.Markers.Spot.CFrame, 0.5);
             if(playerMovedToSpot === undefined) { this.closeWardrobe(); return; }
 
             // Close wardrobe
-            playerMovedToSpot.Connect(() => {
+            this.obliterator.Add(playerMovedToSpot.Connect(() => {
                 let closeDoorSignal: RBXScriptSignal | undefined = this.closeWardrobe();
                 if(closeDoorSignal) {
-                    closeDoorSignal.Connect(() => {
+                    this.obliterator.Add(closeDoorSignal.Connect(() => {
                         if(player.Character) {
                             player.Character.SetAttribute("InWardrobe", true);
                             this.playerInside = player;
                         }
-                    });
+                    }), "Disconnect");
                 }
                 
                 if(player.Character) {
                     this.collisionGroupService.setCollisionGroup(player.Character, "Character");
                 }
-            });
-        });
+            }), "Disconnect");
+        }), "Disconnect");
     }
 
     protected exitPlayer(player: Player): void {
@@ -137,7 +140,7 @@ export class Wardrobe extends HidingSpot <{}, IWardrobeComponent> implements OnS
         if(playerMovedToEntrance === undefined) { this.closeWardrobe(); return; }
 
         // Close wardrobe
-        playerMovedToEntrance.Connect(() => {
+        this.obliterator.Add(playerMovedToEntrance.Connect(() => {
             this.closeWardrobe();
             
             if(player.Character) {
@@ -152,7 +155,7 @@ export class Wardrobe extends HidingSpot <{}, IWardrobeComponent> implements OnS
                     humanoidRootPart.Anchored = false;
                 }
             }
-        });
+        }), "Disconnect");
 
         this.state = HidingSpotState.OPEN;
         player.Character.SetAttribute("InWardrobe", false);
@@ -173,6 +176,8 @@ export class Wardrobe extends HidingSpot <{}, IWardrobeComponent> implements OnS
     private closeWardrobe(): RBXScriptSignal | undefined {
         let leftDoorSignal: RBXScriptSignal | undefined;
         let rightDoorSignal: RBXScriptSignal | undefined;
+        if(leftDoorSignal) { this.obliterator.Add(leftDoorSignal); };
+        if(rightDoorSignal) {this.obliterator.Add(rightDoorSignal); };
 
         if(this.leftDoorDefaultPosition) {
             leftDoorSignal = this.tweenDoor(this.instance.Build.Doors.Left, this.leftDoorDefaultPosition, 0.5);
@@ -192,6 +197,7 @@ export class Wardrobe extends HidingSpot <{}, IWardrobeComponent> implements OnS
             CFrame: goal
         }
         let tween = TweenService.Create(door.PrimaryPart, tweenInfo, targetProperties);
+        this.obliterator.Add(tween);
         tween.Play();
         return tween.Completed;
     }
@@ -200,5 +206,6 @@ export class Wardrobe extends HidingSpot <{}, IWardrobeComponent> implements OnS
         super.destroy();
         this.leaveHidingSpotConnection?.Disconnect();
         this.characterLeaveHidingConnection?.Disconnect();
+        this.obliterator.Cleanup();
     }
 }

@@ -1,6 +1,7 @@
 import { BaseComponent } from "@flamework/components/out/baseComponent";
 import { Component, Components } from "@flamework/components/out/components";
 import { Dependency, OnStart } from "@flamework/core/out/flamework";
+import { Janitor } from "@rbxts/janitor";
 import { Logger } from "@rbxts/log/out/Logger";
 import { TweenService } from "@rbxts/services";
 import { Key } from "server/components/Items/Tools/Key";
@@ -36,6 +37,12 @@ export class SuperDoor<A extends IDoorAttributes, I extends IDoorComponent> exte
     protected gameService: GameService | undefined;
     protected audioService: AudioService | undefined;
     protected readonly logger: Logger | undefined;
+    protected obliterator = new Janitor();
+
+    constructor() {
+        super();
+        this.obliterator.Add(this.instance);
+    }
 
     onStart(): void {}
 
@@ -73,6 +80,7 @@ export class SuperDoor<A extends IDoorAttributes, I extends IDoorComponent> exte
             CFrame: this.instance.Hinge.CFrame.mul(CFrame.Angles(0, 9, 0))
         }
         const tween = TweenService.Create(this.instance.Hinge, tweenInfo, targetProperties);
+        this.obliterator.Add(tween);
         tween.Play();
         
         if(this.audioService) { this.audioService.playSound(this.instance.open); }
@@ -91,6 +99,6 @@ export class SuperDoor<A extends IDoorAttributes, I extends IDoorComponent> exte
 
     public destroy(): void {
         super.destroy();
-        this.instance.Destroy();
+        this.obliterator.Cleanup();
     }
 }

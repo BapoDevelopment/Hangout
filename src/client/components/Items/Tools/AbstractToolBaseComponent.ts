@@ -1,5 +1,6 @@
 import { Component, BaseComponent } from "@flamework/components";
 import { OnStart } from "@flamework/core";
+import { Janitor } from "@rbxts/janitor";
 import { Logger } from "@rbxts/log/out/Logger";
 import { ContextActionService, Players } from "@rbxts/services";
 
@@ -15,19 +16,18 @@ export interface IToolAttributes {}
 
 @Component()
 export abstract class AbstractToolBaseComponent<A extends IToolAttributes, I extends IToolComponent> extends BaseComponent<A, I> implements OnStart {
-
+    protected obliterator = new Janitor();
+    
     private stackable: boolean = false;
 
     constructor(protected readonly logger: Logger) {
         super();
 
-        this.instance.Equipped.Connect(() => this.onEquip());
-        this.instance.Unequipped.Connect(() => this.onUnequip());
+        this.obliterator.Add(this.instance.Equipped.Connect(() => this.onEquip()), "Disconnect");
+        this.obliterator.Add(this.instance.Unequipped.Connect(() => this.onUnequip()), "Disconnect");
     }
 
-    onStart(): void {
-        
-    }
+    onStart(): void {}
 
     protected onEquip(): void {
         ContextActionService.BindAction("Use" + this.instance, (_, inputState) => {
@@ -58,5 +58,6 @@ export abstract class AbstractToolBaseComponent<A extends IToolAttributes, I ext
 
     destroy(): void {
         ContextActionService.UnbindAction("Client Use" + this.instance);
+        this.obliterator.Cleanup();
     }
 }

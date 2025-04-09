@@ -25,6 +25,7 @@ interface IRegularRoomComponent extends IRoomComponent {
 export class Room extends SuperRoom <IRoomAttributes, IRegularRoomComponent> {
     constructor(private readonly logger: Logger) {
         super();
+        this.obliterator.Add(this.instance);
     }
 
     public addItem(item: AbstractToolBaseComponent<IToolAttributes, IToolComponent>): Slot | undefined {
@@ -61,8 +62,9 @@ export class Room extends SuperRoom <IRoomAttributes, IRegularRoomComponent> {
         }
         const components = Dependency<Components>();        
 		const newKey = ServerStorage.Tools.Key.Clone();
+        this.obliterator.Add(newKey);
 
-        components.onComponentAdded<Key>((key) => {
+        this.obliterator.Add(components.onComponentAdded<Key>((key) => {
             key.instance.Handle;
             if(key.instance === newKey) {
                 const slot: Slot | undefined = this.addItem(key);
@@ -72,7 +74,7 @@ export class Room extends SuperRoom <IRoomAttributes, IRegularRoomComponent> {
                 key.activateProximityPromt();
                 key.weldOnTo(slot.instance);
             }
-        })
+        }), "Disconnect");
         this.keyComponent = components.addComponent<Key>(newKey);
 
         this.createLockedDoor();
@@ -90,10 +92,16 @@ export class Room extends SuperRoom <IRoomAttributes, IRegularRoomComponent> {
 
         const components = Dependency<Components>();
         const lockedDoor = ServerStorage.Doors.Locked.Clone();
+        this.obliterator.Add(lockedDoor);
         lockedDoor.PivotTo(this.instance.Markers.Exit.CFrame);
         lockedDoor.Parent = this.instance;
         components.waitForComponent<LockedDoor>(lockedDoor).then((value) => {
             this.doorsComponent = value;
         });
+    }
+
+    public destroy(): void {
+        super.destroy();
+        this.obliterator.Cleanup();
     }
 }

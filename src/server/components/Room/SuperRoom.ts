@@ -11,6 +11,7 @@ import { Wardrobe } from "../Furniture/HidingSpots/Wardrobe";
 import { Bed } from "../Furniture/HidingSpots/Bed";
 import { LockedDoor } from "../Furniture/Doors/LockedDoor";
 import { Table } from "../Furniture/ItemSlots/Table";
+import { Janitor } from "@rbxts/janitor";
 
 export interface IRoomComponent extends Instance {
     Build: Model;
@@ -43,9 +44,11 @@ export class SuperRoom<A extends IRoomAttributes, I extends IRoomComponent> exte
     protected beds: Bed[] = [];
     protected accentLamps: AccentLamp[] = [];
     protected keyComponent: Key | undefined;
+    protected obliterator = new Janitor();
 
     constructor() {
         super();
+        this.obliterator.Add(this.instance);
     }
 
     onStart() {
@@ -118,6 +121,16 @@ export class SuperRoom<A extends IRoomAttributes, I extends IRoomComponent> exte
         return this.instance.Name;
     }
 
+    public getRushWaypoints(): Folder {
+        return this.instance.Monster.Rush.Waypoints;
+    }
+
+    public flickerLamps(): void {
+        this.accentLamps.forEach((accentLamp) => {
+            accentLamp.flicker();
+        });
+    }
+
     public destroy(): void {
         super.destroy();
         this.doorsComponent?.destroy();
@@ -126,17 +139,6 @@ export class SuperRoom<A extends IRoomAttributes, I extends IRoomComponent> exte
         this.drawers.forEach(drawer => {
             drawer.destroy();
         });
-        this.instance.Destroy();
-    }
-
-    public getRushWaypoints(): Folder {
-        return this.instance.Monster.Rush.Waypoints;
-    }
-
-    
-    public flickerLamps(): void {
-        this.accentLamps.forEach((accentLamp) => {
-            accentLamp.flicker();
-        });
+        this.obliterator.Cleanup();
     }
 }

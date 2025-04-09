@@ -1,5 +1,6 @@
 import { Component, BaseComponent } from "@flamework/components";
 import { OnStart } from "@flamework/core";
+import { Janitor } from "@rbxts/janitor";
 import { Logger } from "@rbxts/log/out/Logger";
 import { TweenService } from "@rbxts/services";
 
@@ -31,7 +32,13 @@ export class HidingSpot<A extends IHidableAttributes, I extends IHidingSpotCompo
     protected openPromt: ProximityPrompt | undefined;
     protected openPromtConnection: RBXScriptConnection | undefined;
     protected readonly logger: Logger | undefined;
+    protected obliterator = new Janitor();
     
+    constructor() {
+        super();
+        this.obliterator.Add(this.instance);
+    }
+
     onStart(): void {}
     
     protected createProximityPromt(parent: Attachment): void {
@@ -39,10 +46,11 @@ export class HidingSpot<A extends IHidableAttributes, I extends IHidingSpotCompo
         this.openPromt.ActionText = "Enter";
         this.openPromt.MaxActivationDistance = 5;
         this.openPromt.Parent = parent;
+        this.obliterator.Add(this.openPromt);
 
-        this.openPromtConnection = this.openPromt.Triggered.Connect((player) => {
+        this.obliterator.Add(this.openPromtConnection = this.openPromt.Triggered.Connect((player) => {
             this.enterPlayer(player);
-        });
+        }), "Disconnect");
     }
 
     protected destroyProximityPromt(): void {
@@ -65,6 +73,7 @@ export class HidingSpot<A extends IHidableAttributes, I extends IHidingSpotCompo
             CFrame: markerCFrame
         }
         let tween = TweenService.Create(humanoidRootPart, tweenInfo, humanoidTargetProperties);
+        this.obliterator.Add(tween);
         tween.Play();
         return tween.Completed;
     }
@@ -72,5 +81,6 @@ export class HidingSpot<A extends IHidableAttributes, I extends IHidingSpotCompo
     public destroy(): void {
         super.destroy();
         this.instance.Destroy();
+        this.obliterator.Cleanup();
     }
 }

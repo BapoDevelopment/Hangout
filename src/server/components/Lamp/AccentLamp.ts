@@ -1,5 +1,6 @@
 import { BaseComponent, Component } from "@flamework/components";
 import { OnStart } from "@flamework/core/out/flamework";
+import { Janitor } from "@rbxts/janitor";
 import { Logger } from "@rbxts/log/out/Logger";
 import { TweenService } from "@rbxts/services";
 import { AudioService } from "server/services/AudioService";
@@ -19,8 +20,11 @@ interface IAccentLampComponent extends Model {
 })
 export class AccentLamp extends BaseComponent<{}, IAccentLampComponent> implements OnStart {
     
+    protected obliterator = new Janitor();
+
     constructor(private audioService: AudioService, private readonly logger: Logger) {
         super();
+        this.obliterator.Add(this.instance);
     }
 
     onStart(): void {}
@@ -31,6 +35,7 @@ export class AccentLamp extends BaseComponent<{}, IAccentLampComponent> implemen
         const tweenInfo = new TweenInfo(0.25, Enum.EasingStyle.Elastic, Enum.EasingDirection.InOut, 3, true, 0);
         let targetProperties = { Brightness: 0 };
         let tween = TweenService.Create(pointLight, tweenInfo, targetProperties);
+        this.obliterator.Add(tween);
         tween.Play();
     }
 
@@ -58,5 +63,10 @@ export class AccentLamp extends BaseComponent<{}, IAccentLampComponent> implemen
             if(!part.IsA("BasePart")) { return; }
             part.Anchored = false;
         });
+    }
+
+    destroy(): void {
+        super.destroy();
+        this.obliterator.Cleanup();
     }
 }

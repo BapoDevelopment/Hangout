@@ -23,5 +23,11 @@ const instanceGuard = Flamework.createGuard<ILobbyRoomComponent>();
 export class Lobby extends SuperRoom <IRoomAttributes, ILobbyRoomComponent> {
     constructor(private readonly logger: Logger) {
         super();
+        this.obliterator.Add(this.instance);
+    }
+
+    public destroy(): void {
+        super.destroy();
+        this.obliterator.Cleanup();
     }
 }

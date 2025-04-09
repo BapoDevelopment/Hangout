@@ -39,17 +39,17 @@ export class Lighter extends AbstractToolBaseComponent<ILighterAttributes, ILigh
     constructor(protected audioService: AudioService, protected toolService: ToolService, protected readonly logger: Logger) {
         super(toolService, logger);
 
-        this.instance.Handle.ProximityPrompt.Triggered.Connect((player) => {
+        this.obliterator.Add(this.instance.Handle.ProximityPrompt.Triggered.Connect((player) => {
             this.onProximityPromtActivated(player);
-        });
+        }), "Disconnect");
 
 
         this.setStackable(ServerSettings.ITEMS.TOOLS.LIGHTER.STACKABLE);
+
+        this.obliterator.Add(this.instance);
     }
     
-    onStart(): void {
-
-    }
+    onStart(): void {}
 
     protected onProximityPromtActivated(player: Player): boolean {
         const lighterTool: Tool | undefined = super.getPlayerTool(player, "Lighter");
@@ -68,6 +68,7 @@ export class Lighter extends AbstractToolBaseComponent<ILighterAttributes, ILigh
         this.activateConnection = Events.items.lighter.clickedEvent.connect((player) => {
             this.onActivated(player);
         });
+        this.obliterator.Add(this.activateConnection, "Disconnect");
 
         return lighterEquipped;
     }
@@ -108,7 +109,7 @@ export class Lighter extends AbstractToolBaseComponent<ILighterAttributes, ILigh
     }
 
     private drainGas(player: Player): void {
-        task.spawn(() => {
+        this.obliterator.Add(task.spawn(() => {
             while (this.attributes.On && this.attributes.Gas > 0) {
                 this.attributes.Gas -= ServerSettings.ITEMS.TOOLS.LIGHTER.GAS_DRAIN_PER_MILLISECOND;
                 if (this.attributes.Gas <= 0) {
@@ -118,14 +119,11 @@ export class Lighter extends AbstractToolBaseComponent<ILighterAttributes, ILigh
                 }
                 task.wait(0.001); // 0.001 =^ 1 Millisecond
             }
-        });
+        }));
     }
 
     destroy(): void {
         super.destroy();
-        if(this.activateConnection) {
-            this.activateConnection.Disconnect();
-        }
-        this.instance.Destroy();
+        this.obliterator.Cleanup();
     }
 }

@@ -6,6 +6,7 @@ import { ServerSettings } from "server/ServerSettings";
 import { CollectionService, RunService, Workspace } from "@rbxts/services";
 import { AudioService } from "server/services/AudioService";
 import { IDoorAttributes, IDoorComponent, SuperDoor } from "../Furniture/Doors/SuperDoor";
+import { Janitor } from "@rbxts/janitor";
 
 interface IRushComponent extends Model {
     Primary: Part & {
@@ -29,10 +30,11 @@ export class Rush extends BaseComponent<{}, IRushComponent> implements OnStart {
     private rooms: SuperRoom<IRoomAttributes, IRoomComponent>[];
     private roomCounter: number = 0;
     private waypointCounter: number = 0;
-    private lerpConnection: RBXScriptConnection | undefined;
+    private obliterator = new Janitor<{ connection: RBXScriptConnection}>();
 
     constructor(private audioService: AudioService, private readonly logger: Logger) {
         super();
+        this.obliterator.Add(this.instance);
         this.rooms = new Array<SuperRoom<IRoomAttributes, IRoomComponent>>();
     }
 
@@ -57,7 +59,7 @@ export class Rush extends BaseComponent<{}, IRushComponent> implements OnStart {
 
         const waypoint: BasePart | undefined = this.getWaypoint(this.rooms[this.roomCounter], this.waypointCounter);
         if(!waypoint) { return; }
-        this.lerpConnection = this.lerpTo(waypoint);
+        this.lerpTo(waypoint);
     }
 
     private getWaypoint(room: SuperRoom<IRoomAttributes, IRoomComponent>, number: number): BasePart | undefined {
@@ -75,7 +77,7 @@ export class Rush extends BaseComponent<{}, IRushComponent> implements OnStart {
         return firstWaypoint;
     }
 
-    private lerpTo(target: BasePart): RBXScriptConnection | undefined {
+    private lerpTo(target: BasePart): void {
         if(!this.instance.PrimaryPart || !target) { return; }
         if(!this.instance.PrimaryPart) { return; }
 
@@ -95,13 +97,12 @@ export class Rush extends BaseComponent<{}, IRushComponent> implements OnStart {
             this.attack()
 
             if(alpha >= 1) {
-                connection.Disconnect();
+                this.obliterator.Remove("connection");
                 this.updateWaypointCounter();
                 this.move();
             }
         });
-
-        return connection;
+        this.obliterator.Add(connection, "Disconnect", "connection");
     }
 
     private attack(): void {
@@ -161,9 +162,6 @@ export class Rush extends BaseComponent<{}, IRushComponent> implements OnStart {
 
     public destroy(): void {
         super.destroy();
-        this.instance.Destroy();
-        if(this.lerpConnection) {
-            this.lerpConnection.Disconnect();
-        }
+        this.obliterator.Cleanup();
     }
 }

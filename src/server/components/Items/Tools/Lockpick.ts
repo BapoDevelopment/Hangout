@@ -28,11 +28,13 @@ export class Lockpick extends AbstractToolBaseComponent<ILockpickAttributes, ILo
     constructor(protected toolService: ToolService, protected readonly logger: Logger) {
         super(toolService, logger);
 
-        this.instance.Handle.ProximityPrompt.Triggered.Connect((player) => {
+        this.obliterator.Add(this.instance.Handle.ProximityPrompt.Triggered.Connect((player) => {
             this.onProximityPromtActivated(player);
-        });
+        }), "Disconnect");
 
         this.setStackable(ServerSettings.ITEMS.TOOLS.LOCKPICK.STACKABLE);
+
+        this.obliterator.Add(this.instance);
     }
     
     onStart(): void {}
@@ -85,6 +87,6 @@ export class Lockpick extends AbstractToolBaseComponent<ILockpickAttributes, ILo
 
     destroy(): void {
         super.destroy();
-        this.instance.Destroy();
+        this.obliterator.Cleanup();
     }
 }

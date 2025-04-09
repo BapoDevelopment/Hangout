@@ -34,9 +34,11 @@ export class Cash extends AbstractToolBaseComponent<ICashAttributes, ICashCompon
         , protected readonly logger: Logger) {
         super(toolService, logger);
 
-        this.instance.Handle.ProximityPrompt.Triggered.Connect((player) => {
+        this.obliterator.Add(this.instance.Handle.ProximityPrompt.Triggered.Connect((player) => {
             this.onProximityPromtActivated(player);
-        });
+        }), "Disconnect");
+
+        this.obliterator.Add(this.instance);
     }
     
     onStart(): void {}
@@ -47,6 +49,7 @@ export class Cash extends AbstractToolBaseComponent<ICashAttributes, ICashCompon
         let coinsCollected: boolean = this.cashService.collectedCoins(player, this);
 
         const pickup: Sound = this.instance.Handle.Pickup.Clone();
+        this.obliterator.Add(pickup);
         pickup.Parent = player.Character;
 
         this.audioService.playSoundWithCallback(pickup, () => {
@@ -73,6 +76,6 @@ export class Cash extends AbstractToolBaseComponent<ICashAttributes, ICashCompon
 
     destroy(): void {
         super.destroy();
-        this.instance.Destroy();
+        this.obliterator.Cleanup();
     }
 }

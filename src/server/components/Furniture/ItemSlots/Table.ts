@@ -4,6 +4,7 @@ import { Logger } from "@rbxts/log/out/Logger";
 import { TweenService } from "@rbxts/services"
 import { AudioService } from "server/services/AudioService";
 import { Slot } from "./Slot";
+import { Janitor } from "@rbxts/janitor";
 
 enum DrawerState {
     OPEN = "OPEN",
@@ -55,6 +56,8 @@ interface ITableComponent extends Instance {
 })
 export class Table extends BaseComponent <{}, ITableComponent> implements OnStart {
 
+    protected obliterator = new Janitor();
+    
     private rightTopState: DrawerState = DrawerState.CLOSED;
     private rightBottomState: DrawerState = DrawerState.CLOSED;
     private leftTopState: DrawerState = DrawerState.CLOSED;
@@ -78,24 +81,26 @@ export class Table extends BaseComponent <{}, ITableComponent> implements OnStar
         components.waitForComponent<Slot>(this.instance.LeftBottomDraw.Plate).then((slotComponent) => {
             this.slots.push(slotComponent);
         });
+
+        this.obliterator.Add(this.instance);
     }
 
     onStart(): void {
-        this.instance.RightTopDraw.Knob.Toggle.ProximityPrompt.Triggered.Connect((player) => {
+        this.obliterator.Add(this.instance.RightTopDraw.Knob.Toggle.ProximityPrompt.Triggered.Connect((player) => {
             this.open(player, "RIGHT_TOP_DRAWER", this.instance.RightTopDraw);
-        });
+        }), "Disconnect");
 
-        this.instance.RightBottomDraw.Knob.Toggle.ProximityPrompt.Triggered.Connect((player) => {
+        this.obliterator.Add(this.instance.RightBottomDraw.Knob.Toggle.ProximityPrompt.Triggered.Connect((player) => {
             this.open(player, "RIGHT_BOTTOM_DRAWER", this.instance.RightBottomDraw);
-        });
+        }), "Disconnect");
 
-        this.instance.LeftTopDraw.Knob.Toggle.ProximityPrompt.Triggered.Connect((player) => {
+        this.obliterator.Add(this.instance.LeftTopDraw.Knob.Toggle.ProximityPrompt.Triggered.Connect((player) => {
             this.open(player, "LEFT_TOP_DRAWER", this.instance.LeftTopDraw);
-        });
+        }), "Disconnect");
 
-        this.instance.LeftBottomDraw.Knob.Toggle.ProximityPrompt.Triggered.Connect((player) => {
+        this.obliterator.Add(this.instance.LeftBottomDraw.Knob.Toggle.ProximityPrompt.Triggered.Connect((player) => {
             this.open(player, "LEFT_BOTTOM_DRAWER", this.instance.LeftBottomDraw);
-        });
+        }), "Disconnect");
     }
 
     private open(player: Player, drawerIdentifier: string, model: Model): void {
@@ -144,7 +149,8 @@ export class Table extends BaseComponent <{}, ITableComponent> implements OnStar
             CFrame: model.PrimaryPart.CFrame.mul(new CFrame(0, 0, 1.5 * direction))
         }
         const tween = TweenService.Create(model.PrimaryPart, tweenInfo, targetProperties);
-        tween.Completed.Connect(() => {
+        this.obliterator.Add(tween);
+        this.obliterator.Add(tween.Completed.Connect(() => {
             if(previousState === DrawerState.OPEN) {
                 switch(drawerIdentifier) {
                     case "RIGHT_BOTTOM_DRAWER": {
@@ -182,7 +188,7 @@ export class Table extends BaseComponent <{}, ITableComponent> implements OnStar
                     }
                 }
             }
-        });
+        }), "Disconnect");
 
         tween.Play();
         this.audioService.playSound(this.instance.Primary.move);
@@ -202,6 +208,6 @@ export class Table extends BaseComponent <{}, ITableComponent> implements OnStar
 
     public destroy(): void {
         super.destroy();
-        this.instance.Destroy();
+        this.obliterator.Cleanup();
     }
 }

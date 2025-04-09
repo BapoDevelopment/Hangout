@@ -1,5 +1,6 @@
 import { Component, BaseComponent } from "@flamework/components";
 import { OnStart } from "@flamework/core";
+import { Janitor } from "@rbxts/janitor";
 import { Logger } from "@rbxts/log/out/Logger";
 import { ToolService } from "server/services/ToolService";
 
@@ -16,18 +17,20 @@ export interface IToolAttributes {}
 @Component()
 export abstract class AbstractToolBaseComponent<A extends IToolAttributes, I extends IToolComponent> extends BaseComponent<A, I> implements OnStart {
 
+    protected obliterator = new Janitor();
+    
     private stackable: number = 0;
 
     constructor(protected toolService: ToolService, protected readonly logger: Logger) {
         super();
 
-        this.instance.Equipped.Connect(() => this.onEquip());
-        this.instance.Unequipped.Connect(() => this.onUnequip());
+        this.obliterator.Add(this.instance.Equipped.Connect(() => this.onEquip()), "Disconnect");
+        this.obliterator.Add(this.instance.Unequipped.Connect(() => this.onUnequip()), "Disconnect");
+
+        this.obliterator.Add(this.instance);
     }
 
-    onStart(): void {
-        
-    }
+    onStart(): void {}
 
     public weldOnTo(part: BasePart): void {
         if(!part || !part.IsA("BasePart")) {
@@ -106,5 +109,10 @@ export abstract class AbstractToolBaseComponent<A extends IToolAttributes, I ext
 
     protected onActivated(player: Player): void {
         this.logger.Info(`${this.instance} activated.`);
+    }
+
+    destroy(): void {
+        super.destroy();
+        this.obliterator.Cleanup();
     }
 }

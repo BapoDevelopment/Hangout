@@ -37,16 +37,16 @@ export class Flashlight extends AbstractToolBaseComponent<IFlashlightAttributes,
     constructor(protected audioService: AudioService, protected toolService: ToolService, protected readonly logger: Logger) {
         super(toolService, logger);
 
-        this.instance.Handle.ProximityPrompt.Triggered.Connect((player) => {
+        this.obliterator.Add(this.instance.Handle.ProximityPrompt.Triggered.Connect((player) => {
             this.onProximityPromtActivated(player);
-        });
+        }), "Disconnect");
 
         this.setStackable(ServerSettings.ITEMS.TOOLS.FLASHLIGHT.STACKABLE);
+
+        this.obliterator.Add(this.instance);
     }
     
-    onStart(): void {
-
-    }
+    onStart(): void {}
 
     protected onProximityPromtActivated(player: Player): boolean {
         const flashlightEquipped: boolean = super.onProximityPromtActivated(player);
@@ -58,6 +58,7 @@ export class Flashlight extends AbstractToolBaseComponent<IFlashlightAttributes,
             this.logger.Info("recieved flashlgiht click");
             this.onActivated(player);
         });
+        this.obliterator.Add(this.activateConnection, "Disconnect");
 
         return flashlightEquipped;
     }
@@ -102,7 +103,7 @@ export class Flashlight extends AbstractToolBaseComponent<IFlashlightAttributes,
     }
 
     private drainBattery(player: Player): void {
-        task.spawn(() => {
+        this.obliterator.Add(task.spawn(() => {
             while (this.attributes.On && this.attributes.Battery > 0) {
                 this.attributes.Battery -= ServerSettings.ITEMS.TOOLS.FLASHLIGHT.BATTERY_DRAIN_PER_MILLISECOND;
                 if (this.attributes.Battery <= 0) {
@@ -112,7 +113,7 @@ export class Flashlight extends AbstractToolBaseComponent<IFlashlightAttributes,
                 }
                 task.wait(0.001); // 0.001 =^ 1 Millisecond
             }
-        });
+        }));
     }
 
     private animate(player: Player, animationId: string): RBXScriptSignal | undefined {
@@ -131,22 +132,21 @@ export class Flashlight extends AbstractToolBaseComponent<IFlashlightAttributes,
         if(!animator) { return; }
 
         const animationTrack: AnimationTrack = animator.LoadAnimation(animation);
+        this.obliterator.Add(animationTrack);
 
         animationTrack.Play();
 
-        animationTrack.KeyframeReached.Connect((keyframeName) => {
+        this.obliterator.Add(animationTrack.KeyframeReached.Connect((keyframeName) => {
             if(keyframeName === "Pause") {
                 animationTrack.AdjustSpeed(0);
             }
-        });
+        }), "Disconnect");
 
         return animationTrack.Stopped;
     }
 
     destroy(): void {
         super.destroy();
-        if(this.activateConnection) {
-            this.activateConnection.Disconnect();
-        }
+        this.obliterator.Cleanup();
     }
 }

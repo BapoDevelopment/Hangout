@@ -1,4 +1,5 @@
 import { Component, BaseComponent } from "@flamework/components";
+import { Janitor } from "@rbxts/janitor";
 import { Logger } from "@rbxts/log/out/Logger";
 import { AbstractToolBaseComponent, IToolAttributes, IToolComponent } from "server/components/Items/Tools/AbstractToolBaseComponent";
 
@@ -11,11 +12,14 @@ export interface ISlotComponent extends BasePart {
 })
 export class Slot extends BaseComponent<{}, ISlotComponent> {
 
+    protected obliterator = new Janitor();
+    
     private storedItem: AbstractToolBaseComponent<IToolAttributes, IToolComponent> | undefined;
     private reserved: boolean = false;
 
     constructor(private readonly logger: Logger) {
         super();
+        this.obliterator.Add(this.instance);
     }
 
     public isFree(): boolean {
@@ -47,5 +51,10 @@ export class Slot extends BaseComponent<{}, ISlotComponent> {
 
     public removeItem(): void {
         this.storedItem = undefined;
+    }
+
+    destroy(): void {
+        super.destroy();
+        this.obliterator.Cleanup();
     }
 }

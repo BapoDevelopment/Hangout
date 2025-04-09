@@ -22,15 +22,15 @@ export class RegularDoor extends SuperDoor<IDoorAttributes, IRegualarDoorCompone
         super();
         this.audioService = audioService;
         this.gameService = gameService;
+        this.obliterator.Add(this.instance);
     }
 
     onStart() {
         const doorModel = this.instance;
-
         if(doorModel) {
             if (doorModel.IsA("Model")) {
                 const sensorZone = new Zone(this.instance.SensorPart);
-                sensorZone.playerEntered.Connect((player: Player) => this.handleSensor(player));
+                this.obliterator.Add(sensorZone.playerEntered.Connect((player: Player) => this.handleSensor(player)), "Disconnect");
             } else {
                 this.logger.Warn("The tagged Door is not a Model!");
             }
@@ -43,5 +43,10 @@ export class RegularDoor extends SuperDoor<IDoorAttributes, IRegualarDoorCompone
         if (this.state === DoorState.UNOPEN) {
             super.openByPlayer(player);
         }
+    }
+
+    public destroy(): void {
+        super.destroy();
+        this.obliterator.Cleanup();
     }
 }

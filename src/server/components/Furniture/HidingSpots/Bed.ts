@@ -38,6 +38,7 @@ export class Bed extends HidingSpot <{}, IBedComponent> implements OnStart {
 
     constructor(private audioService: AudioService, private collisionGroupService: CollisionGroupService, protected readonly logger: Logger) {
         super();
+        this.obliterator.Add(this.instance);
     }
 
     onStart(): void {
@@ -46,6 +47,7 @@ export class Bed extends HidingSpot <{}, IBedComponent> implements OnStart {
                 this.exitPlayer(player);
             }
         });
+        this.obliterator.Add(this.leaveHidingSpotConnection, "Disconnect");
         this.createProximityPromt(this.instance.Markers.Spot.ProximityPromtPosition);
     }
 
@@ -65,6 +67,7 @@ export class Bed extends HidingSpot <{}, IBedComponent> implements OnStart {
                 this.createProximityPromt(this.instance.Markers.Spot.ProximityPromtPosition);
             }
         });
+        this.obliterator.Add(this.characterLeaveHidingConnection, "Disconnect");
 
         const humanoid: Humanoid | undefined = player.Character.FindFirstChild("Humanoid") as Humanoid;
         if(humanoid) {
@@ -94,13 +97,13 @@ export class Bed extends HidingSpot <{}, IBedComponent> implements OnStart {
             nearestEntrance.CFrame,
                 0.46);
         if(playerMovedToEntrance === undefined) { return; }
-        playerMovedToEntrance.Connect(() => {
+        this.obliterator.Add(playerMovedToEntrance.Connect(() => {
             if(!player.Character) { return; }
             //humanoidRootPart.Anchored = true;
             player.Character.SetAttribute("UnderBed", true);
             this.playerInside = player;
             this.animate(player, "LAY_DOWN", nearestEntrance.Name);
-        });
+        }), "Disconnect");
     }
        
     protected exitPlayer(player: Player): void {
@@ -119,11 +122,11 @@ export class Bed extends HidingSpot <{}, IBedComponent> implements OnStart {
 
         const rbxSignal: RBXScriptSignal | undefined = this.animate(player, "GET_UP", this.enteredSide);
         if(rbxSignal) {
-            rbxSignal.Connect(() => {
+            this.obliterator.Add(rbxSignal.Connect(() => {
                 if(player.Character) {
                     this.collisionGroupService.setCollisionGroup(player.Character, "Character");
                 }
-            })
+            }), "Disconnect");
         }
 
         const humanoid: Humanoid | undefined = player.Character.FindFirstChild("Humanoid") as Humanoid;
@@ -168,23 +171,24 @@ export class Bed extends HidingSpot <{}, IBedComponent> implements OnStart {
         if(!animator) { return; }
 
         const animationTrack: AnimationTrack = animator.LoadAnimation(animation);
+        this.obliterator.Add(animationTrack);
 
         animationTrack.Play();
 
-        animationTrack.KeyframeReached.Connect((keyframeName) => {
+        this.obliterator.Add(animationTrack.KeyframeReached.Connect((keyframeName) => {
             if(keyframeName === "Pause" && action === "LAY_DOWN") {
                 animationTrack.AdjustSpeed(0);
             }
-        });
+        }), "Disconnect");
 
-        animationTrack.Stopped.Connect(() => {
+        this.obliterator.Add(animationTrack.Stopped.Connect(() => {
             humanoid.GetPlayingAnimationTracks().forEach(track => {
                 track.Stop();
             });
             if(action === "LAY_DOWN") {
                 humanoid.WalkSpeed = 16;
             }
-        });
+        }), "Disconnect");
 
         return animationTrack.Stopped;
     }
@@ -212,7 +216,6 @@ export class Bed extends HidingSpot <{}, IBedComponent> implements OnStart {
 
     public destroy(): void {
         super.destroy();
-        this.leaveHidingSpotConnection?.Disconnect();
-        this.characterLeaveHidingConnection?.Disconnect();
+        this.obliterator.Cleanup();
     }
 }
