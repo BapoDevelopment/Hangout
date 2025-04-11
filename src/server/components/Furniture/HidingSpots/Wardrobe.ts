@@ -6,6 +6,8 @@ import { Events } from "server/network";
 import { AudioService } from "server/services/AudioService";
 import { CollisionGroupService } from "server/services/CollisionGroupService";
 import { HidingSpot, HidingSpotState, IHidingSpotComponent } from "./HidingSpot";
+import { ReplicaService } from "server/services/ReplicaService";
+import { ServerSettings } from "server/ServerSettings";
 
 interface IWardrobeComponent extends IHidingSpotComponent {
     Primary: Part & {
@@ -37,7 +39,10 @@ export class Wardrobe extends HidingSpot <{}, IWardrobeComponent> implements OnS
     private leftDoorDefaultPosition: CFrame | undefined;
     private rightDoorDefaultPosition: CFrame | undefined;
 
-    constructor(private audioService: AudioService, private collisionGroupService: CollisionGroupService, protected readonly logger: Logger) {
+    constructor(private replicaService: ReplicaService
+        , private audioService: AudioService
+        , private collisionGroupService: CollisionGroupService
+        , protected readonly logger: Logger) {
         super();
         this.obliterator.Add(this.instance);
     }
@@ -107,6 +112,14 @@ export class Wardrobe extends HidingSpot <{}, IWardrobeComponent> implements OnS
                         if(player.Character) {
                             player.Character.SetAttribute("InWardrobe", true);
                             this.playerInside = player;
+                            this.replicaService.enterWardrobe(player.UserId);
+
+                            this.obliterator.Add(task.spawn(() => {
+                                wait(20);
+                                if(this.playerInside === player) {
+                                    this.exitPlayer(player);
+                                }
+                            }));
                         }
                     }), "Disconnect");
                 }
@@ -129,6 +142,7 @@ export class Wardrobe extends HidingSpot <{}, IWardrobeComponent> implements OnS
         this.collisionGroupService.setCollisionGroup(player.Character, "Wardrobe");
 
         this.openWardrobe();
+        this.replicaService.exitWardrobe(player.UserId);
 
         //Play open Sound
         this.audioService.playSound(this.instance.Primary.open);
@@ -147,7 +161,7 @@ export class Wardrobe extends HidingSpot <{}, IWardrobeComponent> implements OnS
                 this.collisionGroupService.setCollisionGroup(player.Character, "Character");
                 const humanoid: Humanoid | undefined = player.Character.FindFirstChild("Humanoid") as Humanoid;
                 if(humanoid) {
-                    humanoid.WalkSpeed = 96;
+                    humanoid.WalkSpeed = ServerSettings.GAME.DEFAULT_WALKSPEED;
                     humanoid.AutoRotate = true;
                 }
                 const humanoidRootPart: Part | undefined = player.Character.FindFirstChild("HumanoidRootPart") as Part;

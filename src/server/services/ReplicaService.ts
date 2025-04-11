@@ -26,4 +26,18 @@ export class ReplicaService implements OnStart{
 
         replica.Set(["Cash", "PartPosition"], position);
     }
+
+    public enterWardrobe(playerUserId: number): void {
+        const replica = this.Replicas.get(playerUserId);
+        if(!replica) { return; }
+
+        replica.Set(["Furniture", "Wardrobe", "Vignette"], true);
+    }
+
+    public exitWardrobe(playerUserId: number): void {
+        const replica = this.Replicas.get(playerUserId);
+        if(!replica) { return; }
+
+        replica.Set(["Furniture", "Wardrobe", "Vignette"], false);
+    }
 }

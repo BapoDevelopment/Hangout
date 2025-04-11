@@ -5,6 +5,7 @@ import { Players, RunService } from "@rbxts/services";
 import { DataService } from "./DataService";
 import { Replica, ReplicaServer } from "@rbxts/mad-replica";
 import { ReplicaService } from "./ReplicaService";
+import { Value } from "@rbxts/fusion";
 
 declare global {
     interface Replicas {
@@ -13,7 +14,12 @@ declare global {
 				Cash: {
 					Amount: number;
 					PartPosition: Vector3;
-				}
+				},
+				Furniture: {
+                    Wardrobe: {
+                        Vignette: boolean;
+                    },
+                },
             };
             Tags: {};
         };
@@ -206,7 +212,12 @@ export class ProfileStoreService implements OnInit {
 				Cash: {
 					Amount: profile.Data.Cash,
 					PartPosition: new Vector3(0, 0, 0),
-				}
+				},
+				Furniture: {
+                    Wardrobe: {
+                        Vignette: false,
+                    },
+                },
 			},
 		});
 	

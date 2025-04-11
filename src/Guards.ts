@@ -7,7 +7,17 @@ declare global {
     interface ReplicatedStorage extends Instance {
         Monsters: Folder & {
             Rush: Model;
-        }
+        },
+        Audio: Folder & {
+            Sounds: Folder & {
+                Furniture: Folder & {
+                    Wardrobe: Folder & {
+                        Heartbeat: Sound;
+                        Scream: Sound;
+                    },
+                },
+            },
+        },
     }
 
     interface ServerStorage extends Instance {
@@ -102,5 +112,9 @@ declare global {
                 Pickup: Sound;
             }
         }
+    }
+
+    interface Lighting extends Instance {
+        ColorCorrection: ColorCorrectionEffect;
     }
 }

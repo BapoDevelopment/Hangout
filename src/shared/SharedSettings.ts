@@ -3,6 +3,7 @@ export const SharedSettings = {
         WARDROBE: {
             ENTER: "rbxassetid://111855990995362",
             EXIT: "rbxassetid://111855990995362",
+            KICKOUT: "rbxassetid://111855990995362",
         },
         BED: {
             ENTER: {

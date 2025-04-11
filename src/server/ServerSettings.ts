@@ -69,7 +69,7 @@ export const ServerSettings = {
             }
         },
         CASH: {
-            CATEGORY_SPAWN_RATE_IN_PERCENT: 0,
+            CATEGORY_SPAWN_RATE_IN_PERCENT: 100,
             5: {
                 SPAWN_RATE_IN_PERCENT: 100,
             },
