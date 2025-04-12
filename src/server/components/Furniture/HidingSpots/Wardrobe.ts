@@ -117,6 +117,7 @@ export class Wardrobe extends HidingSpot <{}, IWardrobeComponent> implements OnS
                             this.obliterator.Add(task.spawn(() => {
                                 wait(20);
                                 if(this.playerInside === player) {
+                                    humanoid.TakeDamage(ServerSettings.ENTITIES.HIDE.DMG);
                                     this.exitPlayer(player);
                                 }
                             }));

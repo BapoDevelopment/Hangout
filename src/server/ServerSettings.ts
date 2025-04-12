@@ -25,6 +25,9 @@ export const ServerSettings = {
             SPEED: 35,
             MAX_DISTANCE: 500000,
         },
+        HIDE: {
+            DMG: 40,
+        }
     },
     ITEMS: {
         TOOLS: {

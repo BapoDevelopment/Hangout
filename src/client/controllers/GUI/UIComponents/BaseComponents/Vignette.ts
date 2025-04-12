@@ -30,7 +30,6 @@ export function Vignette(props: IVignette) {
     let observer = Observer(props.Enter);
     observer.onChange(() => {
         if(props.Enter.get() === false) {
-            print("Exit");
             if(task2) { task.cancel(task2); }
             if(task3) { task.cancel(task3); }
             if(task1) { task.cancel(task1); }
@@ -44,20 +43,25 @@ export function Vignette(props: IVignette) {
             TextWarningTransparancy.set(1);
 
             const colorCorrection = Lighting.FindFirstChildOfClass("ColorCorrectionEffect");
-            print("Exit 2");
             if (colorCorrection) {
-                print("Exit 3");
+                const tweenInfo = new TweenInfo(14, Enum.EasingStyle.Quad, Enum.EasingDirection.In, 0, false, 0);
+                const targetProperties = {
+                    Saturation: ClientSettings.DEFAULTS.LIGHTING.COLORCORRECTION.SATURATION,
+                    Contrast: ClientSettings.DEFAULTS.LIGHTING.COLORCORRECTION.CONTRAST,
+                    Brightness: ClientSettings.DEFAULTS.LIGHTING.COLORCORRECTION.BRIGHTNESS,
+                }
+                const tween = TweenService.Create(colorCorrection, tweenInfo, targetProperties);
+                tween.Play();
+            }
+            if (colorCorrection) {
                 colorCorrection.Saturation = 0;
                 colorCorrection.Contrast = 0;
                 colorCorrection.Brightness = 0;
             }
-            print("Exit 4");
 
             if(props.AudioController) { props.AudioController?.stopWardrobeWarnings(); }
 
         } else if(props.Enter.get() === true) {
-            print("Enter");
-
             task1 = task.spawn(() => {
                 VingetteTransparancy.set(0.12),
                 wait(9);
@@ -210,25 +214,7 @@ export function Vignette(props: IVignette) {
                         const tween = TweenService.Create(colorCorrection, tweenInfo, targetProperties);
                         tween.Play();
                     }
-                    wait(0.4);
-                    if (colorCorrection) {
-                        const tweenInfo = new TweenInfo(14, Enum.EasingStyle.Quad, Enum.EasingDirection.In, 0, false, 0);
-                        const targetProperties = {
-                            Saturation: ClientSettings.DEFAULTS.LIGHTING.COLORCORRECTION.SATURATION,
-                            Contrast: ClientSettings.DEFAULTS.LIGHTING.COLORCORRECTION.CONTRAST,
-                            Brightness: ClientSettings.DEFAULTS.LIGHTING.COLORCORRECTION.BRIGHTNESS,
-                        }
-                        const tween = TweenService.Create(colorCorrection, tweenInfo, targetProperties);
-                        tween.Play();
-                    }
                 });
-
-                wait(17.11);
-                VingetteTransparancy.set(1),
-                FullscreenBlackTransparancy.set(1);
-                RedVignetteTransparancy.set(1);
-                TexturedVignetteSize.set(UDim2.fromScale(1.5, 1.5));
-                TextWarningTransparancy.set(1);
             });
         }
     });
