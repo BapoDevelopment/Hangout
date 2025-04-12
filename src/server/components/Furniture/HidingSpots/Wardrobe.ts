@@ -112,8 +112,8 @@ export class Wardrobe extends HidingSpot <{}, IWardrobeComponent> implements OnS
                         if(player.Character) {
                             player.Character.SetAttribute("InWardrobe", true);
                             this.playerInside = player;
-                            this.replicaService.enterWardrobe(player.UserId);
 
+                            this.replicaService.enterHidingSpot(player.UserId);
                             this.obliterator.Add(task.spawn(() => {
                                 wait(20);
                                 if(this.playerInside === player) {
@@ -143,7 +143,7 @@ export class Wardrobe extends HidingSpot <{}, IWardrobeComponent> implements OnS
         this.collisionGroupService.setCollisionGroup(player.Character, "Wardrobe");
 
         this.openWardrobe();
-        this.replicaService.exitWardrobe(player.UserId);
+        this.replicaService.exitHidingSpot(player.UserId);
 
         //Play open Sound
         this.audioService.playSound(this.instance.Primary.open);

@@ -6,6 +6,8 @@ import { AudioService } from "server/services/AudioService";
 import { CollisionGroupService } from "server/services/CollisionGroupService";
 import { SharedSettings } from "shared/SharedSettings";
 import { HidingSpot, HidingSpotState, IHidingSpotComponent } from "./HidingSpot";
+import { ReplicaService } from "server/services/ReplicaService";
+import { ServerSettings } from "server/ServerSettings";
 
 interface IBedComponent extends IHidingSpotComponent {
     Primary: Part & {
@@ -36,7 +38,10 @@ export class Bed extends HidingSpot <{}, IBedComponent> implements OnStart {
     private exit: BasePart | undefined;
     private enteredSide: string = "FRONT";
 
-    constructor(private audioService: AudioService, private collisionGroupService: CollisionGroupService, protected readonly logger: Logger) {
+    constructor(private replicaService: ReplicaService,
+        private audioService: AudioService,
+        private collisionGroupService: CollisionGroupService,
+        protected readonly logger: Logger) {
         super();
         this.obliterator.Add(this.instance);
     }
@@ -102,6 +107,16 @@ export class Bed extends HidingSpot <{}, IBedComponent> implements OnStart {
             //humanoidRootPart.Anchored = true;
             player.Character.SetAttribute("UnderBed", true);
             this.playerInside = player;
+
+            this.replicaService.enterHidingSpot(player.UserId);
+            this.obliterator.Add(task.spawn(() => {
+                wait(20);
+                if(this.playerInside === player) {
+                    humanoid.TakeDamage(ServerSettings.ENTITIES.HIDE.DMG);
+                    this.exitPlayer(player);
+                }
+            }));
+
             this.animate(player, "LAY_DOWN", nearestEntrance.Name);
         }), "Disconnect");
     }
@@ -116,6 +131,7 @@ export class Bed extends HidingSpot <{}, IBedComponent> implements OnStart {
         }
 
         this.characterLeaveHidingConnection?.Disconnect();
+        this.replicaService.exitHidingSpot(player.UserId);
 
         //Play open Sound
         this.audioService.playSound(this.instance.Primary.open);
