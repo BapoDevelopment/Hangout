@@ -1,34 +1,3 @@
 export const SharedSettings = {
-    ANIMATIONS: {
-        WARDROBE: {
-            ENTER: "rbxassetid://111855990995362",
-            EXIT: "rbxassetid://111855990995362",
-            KICKOUT: "rbxassetid://111855990995362",
-        },
-        BED: {
-            ENTER: {
-                LEFT: "rbxassetid://90812499993306",
-                RIGHT: "rbxassetid://125711945868026",
-                FRONT: "rbxassetid://134657693309098",
-            },
-            EXIT: {
-                LEFT: "rbxassetid://137327121562391",
-                RIGHT: "rbxassetid://74351897610115",
-                FRONT: "rbxassetid://99556684227432",
-            },
-        },
-        ITEMS: {
-            FLASHLIGHT: {
-                ON: "rbxassetid://107227467377996",
-                OFF: "rbxassetid://84355542168344",
-                IDLE: "rbxassetid://80863863865003",
-            }
-        }
-    },
-    ITEMS: {
-        VITAMINS: {
-            DURATION: 8,
-            FIELD_OF_VIEW: 80,
-        }
-    }
+    
 };

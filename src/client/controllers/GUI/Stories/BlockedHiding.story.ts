@@ -1,5 +1,5 @@
 import { Children, New, Value } from "@rbxts/fusion";
-import { Vignette } from "../UIComponents/BaseComponents/Vignette";
+import { HidingSpotBlocked } from "../UIComponents/BaseComponents/HidingSpotBlocked";
 
 function story(target: Frame) {
     const component = New("Frame")({
@@ -7,10 +7,10 @@ function story(target: Frame) {
         Size: UDim2.fromScale(1, 1),
         BackgroundTransparency: 1,
         [Children]: [
-            Vignette({
-                Enter: Value(false),
+            HidingSpotBlocked({
+                Blocked: Value(true),
             }),
-        ],
+        ]
     });
 
     return () => {

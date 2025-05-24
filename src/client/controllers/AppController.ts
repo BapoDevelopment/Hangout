@@ -4,8 +4,8 @@ import { GuiService, Players, Workspace } from "@rbxts/services";
 import { RessourceDisplay } from "./GUI/UIComponents/ComplexComponents/RessourceDisplay";
 import { RessourceContainer } from "./GUI/UIComponents/ComplexComponents/RessourceContainer";
 import { ReplicaClient } from "@rbxts/mad-replica";
-import { Vignette } from "./GUI/UIComponents/BaseComponents/Vignette";
 import { AudioController } from "./AudioController";
+import { HidingSpotBlocked } from "./GUI/UIComponents/BaseComponents/HidingSpotBlocked";
 
 declare global {
     interface Replicas {
@@ -16,6 +16,7 @@ declare global {
 					PartPosition: Vector3;
 				},
                 Furniture: {
+                    BlockedHiding: boolean;
                     Wardrobe: {
                         Vignette: boolean;
                     },
@@ -45,6 +46,7 @@ export class AppController implements OnStart {
         const ressourceSpawnPosition = Value(UDim2.fromScale(0.5, 0.5));
 
         // Furniture
+        const blockedHiding = Value(false);
         const wardrobeVignette = Value(false);
         
         const playerGUI = Players.LocalPlayer.FindFirstChild("PlayerGui");
@@ -73,9 +75,8 @@ export class AppController implements OnStart {
                         DefaultDisplaySize: displaySize.get(),
                         TargetDisplaySize: targetDisplaySize,
                     }),
-                    Vignette({
-                        Enter: wardrobeVignette,
-                        AudioController: this.audioController,
+                    HidingSpotBlocked({
+                        Blocked: blockedHiding,
                     }),
                 ],
             });
@@ -100,6 +101,10 @@ export class AppController implements OnStart {
                     ressourceSpawnPosition.set(screenPosition);
                     spawnCash.set(deltaCash);
                 }
+            });
+
+            replica.OnSet(["Furniture", "BlockedHiding"], (new_value, old_value) => {
+                blockedHiding.set(new_value);
             });
 
             replica.OnSet(["Furniture", "Wardrobe", "Vignette"], (new_value, old_value) => {

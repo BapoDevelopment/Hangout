@@ -14,7 +14,7 @@ function rateLimiter<I extends Array<unknown>>(): Networking.EventMiddleware<I> 
             const limitData = rateLimits.get(player) ?? { count: 0, lastReset: now };
 
             // If more than a second is proceeded, then the counter will be reseted
-            if (now - limitData.lastReset >= ServerSettings.RATE_LIMITS.FLASHLIGHT.UN_EQUIP) {
+            if (now - limitData.lastReset >= 10) {
                 limitData.count = 0;
                 limitData.lastReset = now;
             }

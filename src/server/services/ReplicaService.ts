@@ -40,4 +40,19 @@ export class ReplicaService implements OnStart{
 
         replica.Set(["Furniture", "Wardrobe", "Vignette"], false);
     }
+
+    public kickedOutOfHidingSpot(playerUserId: number): void {
+        const replica = this.Replicas.get(playerUserId);
+        if(!replica) { return; }
+
+        replica.Set(["Furniture", "BlockedHiding"], true);
+        this.exitHidingSpot(playerUserId);
+    }
+
+    public allowHidingSpot(playerUserId: number): void {
+        const replica = this.Replicas.get(playerUserId);
+        if(!replica) { return; }
+
+        replica.Set(["Furniture", "BlockedHiding"], false);
+    }
 }

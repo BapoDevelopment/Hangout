@@ -16,6 +16,7 @@ declare global {
 					PartPosition: Vector3;
 				},
 				Furniture: {
+					BlockedHiding: boolean,
                     Wardrobe: {
                         Vignette: boolean;
                     },
@@ -214,6 +215,7 @@ export class ProfileStoreService implements OnInit {
 					PartPosition: new Vector3(0, 0, 0),
 				},
 				Furniture: {
+					BlockedHiding: false,
                     Wardrobe: {
                         Vignette: false,
                     },
