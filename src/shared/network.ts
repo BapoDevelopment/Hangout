@@ -1,19 +1,6 @@
 import { Networking } from "@flamework/networking";
 interface ClientToServerEvents {
-    leaveWardrobe(): void;
-    leaveBed(): void;
-
-    items: {
-        flashlight: {
-            clickedEvent(): void;
-        },
-        lighter: {
-            clickedEvent(): void;
-        },
-        vitamins: {
-            clickedEvent(): void;
-        }
-    }
+    punch(): void;
 }
 
 interface ServerToClientEvents {}

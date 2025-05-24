@@ -5,7 +5,10 @@ declare global {
     }
 
     interface ReplicatedStorage extends Instance {
-
+        PlayerAnimations: Folder & {
+            Punch: Animation;
+        };
+        Money: Folder;
     }
 
     interface ServerStorage extends Instance {
