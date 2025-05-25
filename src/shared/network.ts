@@ -1,9 +1,12 @@
 import { Networking } from "@flamework/networking";
 interface ClientToServerEvents {
     punch(): void;
+    collectMoney(money: Part): void;
 }
 
-interface ServerToClientEvents {}
+interface ServerToClientEvents {
+    spawnedMoney(money: Part[]): void;
+}
 
 interface ClientToServerFunctions {}
 

@@ -1,5 +1,6 @@
 export const SharedSettings = {
     ANIMATIONS: {
-        PUNCH: "rbxassetid://135393674287578",
+        LEFT_PUNCH: "rbxassetid://108252310473236",
+        RIGHT_PUNCH: "rbxassetid://135393674287578",
     },
 };
