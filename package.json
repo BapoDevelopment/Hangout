@@ -31,6 +31,7 @@
     "@rbxts/mad-replica": "^1.0.3",
     "@rbxts/profile-store": "^1.0.3",
     "@rbxts/types": "^1.0.813",
+    "@rbxts/ui-labs": "^2.3.8",
     "@rbxts/zone-plus": "^3.2.0"
   }
 }
