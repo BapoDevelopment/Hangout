@@ -59,10 +59,6 @@ export const Home: App = {
 			BackgroundColor3: Color3.fromRGB(168, 33, 135),
 			BackgroundTransparency: 1,
 			[Children]: [
-				TopBar({
-					Money: Value("1.25M €"),
-					Time: Value("17:52"),
-				}),
 				New("Frame")({
 					Name: "Apps",
 					Size: UDim2.fromScale(0.94, 0.85),

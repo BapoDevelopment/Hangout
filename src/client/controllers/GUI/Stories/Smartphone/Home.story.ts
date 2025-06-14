@@ -6,7 +6,7 @@ import { Chat } from "../../UIComponents/Smartphone/Apps/Chat";
 
 function story(target: Frame) {
 	// assemble main GUI
-	currentApp.set(Chat);
+	currentApp.set(Home);
 	
 	const component = New("Frame")({
 		Parent: target,
