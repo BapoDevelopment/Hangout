@@ -2,6 +2,8 @@ import { Controller, OnStart } from "@flamework/core";
 import { Children, New, Value } from "@rbxts/fusion";
 import { Players } from "@rbxts/services";
 import { RadialMenu3D } from "./GUI/UIComponents/RadialMenu";
+import { Phone } from "./GUI/UIComponents/Smartphone/Phone";
+import { Home } from "./GUI/UIComponents/Smartphone/Apps/Home";
 
 @Controller()
 export class AppController implements OnStart {

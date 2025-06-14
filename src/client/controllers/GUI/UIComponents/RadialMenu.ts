@@ -114,7 +114,7 @@ export function RadialMenu3D(props: {
 		[Children]: [
 			New("Frame")({
 				SizeConstraint: Enum.SizeConstraint.RelativeYY,
-				Size: UDim2.fromScale(1, 1),
+				Size: UDim2.fromScale(0.75, 0.75),
 				AnchorPoint: new Vector2(0.5, 0.5),
 				Position: UDim2.fromScale(0.5, 0.5),
 				BackgroundTransparency: 1,
@@ -132,7 +132,6 @@ export function RadialMenu3D(props: {
 					New("TextLabel")({
 						AnchorPoint: new Vector2(0.5, 0.5),
 						Position: UDim2.fromScale(0.5, 0.5),
-						Size: UDim2.fromScale(0.25, 0.15),
 						Text: selectedLabel,
 						TextColor3: Color3.fromRGB(255, 255, 255),
 						TextScaled: true,
